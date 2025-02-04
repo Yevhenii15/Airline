@@ -1,3 +1,124 @@
+
 {
-  "name": "Airline"
+  "AboutCompany": {
+    "name": "string",
+    "description": "string",
+    "logo": "string",
+    "address": "string",
+    "phone": "number",
+    "email": "string"
+  },
+
+  "User": {
+    "id": "number",
+    "name": "string",
+    "email": "string",
+    "phone": "number",
+    "password": "string",
+    "date_of_birth": "string",
+    "passport_number": "string",
+    "nationality": "string"
+  },
+
+  "Admin": {
+    "id": "number",
+    "email": "string",
+    "password": "string"
+  },
+
+  "Flights": [
+    {
+      "flight_id": "number",
+      "flight_number": "string",
+      "departure_airport": "string",
+      "arrival_airport": "string",
+      "departure_time": "string",
+      "arrival_time": "string",
+      "duration": "string",
+      "status": "string",
+      "aircraft_type": "string",
+      "seats_available": "number",
+      "ticket_price": "number"
+    }
+  ],
+  "Bookings": [
+    {
+      "booking_id": "number",
+      "user_id": "number",
+      "booking_status": "string",
+      "payment_status": "string",
+      "booking_date": "string",
+      "total_price": "number"
+    }
+  ],
+
+  "Tickets": [
+    {
+      "ticket_id": "number",
+      "booking_id": "number",
+      "flight_id": "number",
+      "passenger_id": "number",
+      "seat_number": "string",
+      "ticket_price": "number",
+      "baggage_allowance": "string"
+    }
+  ],
+
+  "Passengers": [
+    {
+      "passenger_id": "number",
+      "user_id": "number",
+      "name": "string",
+      "email": "string",
+      "phone": "number",
+      "passport_number": "string",
+      "nationality": "string",
+      "date_of_birth": "string",
+      "expiration_date": "string",
+      "special_request": "string"
+    }
+  ],
+
+  "Payments": [
+    {
+      "payment_id": "number",
+      "booking_id": "number",
+      "user_id": "number",
+      "amount": "number",
+      "payment_method": "string",
+      "payment_date": "string",
+      "payment_status": "string"
+    }
+  ],
+
+  "Aircrafts": [
+    {
+      "aircraft_id": "number",
+      "aircraft_type": "string",
+      "total_seats": "number"
+    }
+  ],
+
+  "Airports": [
+    {
+      "airport_id": "number",
+      "name": "string",
+      "postalCode": "string",
+      "city": "string",
+      "country": "string"
+    }
+  ],
+
+  "Luggage": [
+    {
+      "luggage_id": "number",
+      "booking_id": "number",
+      "weight": "number",
+      "dimensions": "string",
+      "type": "string"
+    }
+  ]
 }
+
+
+
