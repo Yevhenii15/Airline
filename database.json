@@ -9,18 +9,16 @@
   },
 
   "User": {
-    "id": "number",
+    "user_id": "number",
     "name": "string",
     "email": "string",
     "phone": "number",
     "password": "string",
-    "date_of_birth": "string",
-    "passport_number": "string",
-    "nationality": "string"
+    "date_of_birth": "string"
   },
 
   "Admin": {
-    "id": "number",
+    "admin_id": "number",
     "email": "string",
     "password": "string"
   },
@@ -35,11 +33,11 @@
       "arrival_time": "string",
       "duration": "string",
       "status": "string",
-      "aircraft_type": "string",
-      "seats_available": "number",
-      "ticket_price": "number"
+      "aircraft_id": "number",
+      "seats_available": "number"
     }
   ],
+
   "Bookings": [
     {
       "booking_id": "number",
@@ -57,7 +55,18 @@
       "booking_id": "number",
       "flight_id": "number",
       "passenger_id": "number",
+      "seat_id": "number",
+      "ticket_price": "number",
+      "baggage_allowance": "string"
+    }
+  ],
+
+  "Seats": [
+    {
+      "seat_id": "number",
+      "row": "number",
       "seat_number": "string",
+      "status": "boolean",
       "ticket_price": "number",
       "baggage_allowance": "string"
     }
@@ -69,7 +78,8 @@
       "ticket_id": "number",
       "user_id": "number",
       "flight_id": "number",
-      "seat_number": "string",
+      "seat_id": "number",
+      "passenger_id": "number",
       "baggage_checked": "boolean",
       "checkin_time": "string",
       "boarding_pass": "string"
@@ -79,15 +89,11 @@
   "Passengers": [
     {
       "passenger_id": "number",
-      "user_id": "number",
       "name": "string",
-      "email": "string",
-      "phone": "number",
       "passport_number": "string",
       "nationality": "string",
       "date_of_birth": "string",
-      "expiration_date": "string",
-      "special_request": "string"
+      "expiration_date": "string"
     }
   ],
 
