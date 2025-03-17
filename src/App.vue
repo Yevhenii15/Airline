@@ -39,7 +39,6 @@ import { state } from '@/modules/globalStates/state'
 
 const { logout } = useUsers()
 const isLoggedin = computed(() => state.isLoggedIn)
-const isAdmin = computed(() => state.isAdmin)
 
 </script>
 
