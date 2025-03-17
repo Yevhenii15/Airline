@@ -1,127 +1,132 @@
-import {ref} from 'vue';
-import type { User } from '@/interfaces/interfaces';
-import { state } from '../globalStates/state';
+import { ref } from "vue";
+import type { User } from "@/interfaces/interfaces";
+import { state } from "../globalStates/state";
 
 export const useUsers = () => {
-    const token = ref<string | null>(null);
-   /*  const isLoggedIn = ref<boolean>(false); */
-    const error = ref<string | null>(null);
-    const user = ref< User | null>(null);
+  const token = ref<string | null>(null);
+  const error = ref<string | null>(null);
+  const user = ref<User | null>(null);
 
-    const name = ref<string>('');
-    const email = ref<string>('');
-    const phone = ref<string>('');
-    const password = ref<string>('');
-    const dateOfBirth = ref<Date>(new Date());
-    const isAdmin = ref<boolean>(false);
+  const name = ref<string>("");
+  const email = ref<string>("");
+  const phone = ref<string>("");
+  const password = ref<string>("");
+  const dateOfBirth = ref<Date>(new Date());
+  const isAdmin = ref<boolean>(false); // Local isAdmin
 
-    const fetchToken = async( email: string, password: string): Promise<void> => {
-        try{
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-            console.log("ApiBaseUrl:", apiBaseUrl);
-            const response = await fetch(`${apiBaseUrl}/user/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'auth-token': localStorage.getItem('lsToken') || ''
-            },
-            body: JSON.stringify({email, password})
-            })
+  const fetchToken = async (email: string, password: string): Promise<void> => {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      console.log("ApiBaseUrl:", apiBaseUrl);
 
-            if (!response.ok) {
-                const errorResponse = await response.json()
-                console.log(errorResponse.error || 'Error')
-                throw new Error('An error occurred');
-            }
+      const requestBody = JSON.stringify({ email, password });
+      console.log("Request Body:", requestBody);
 
-            const authResponse = await response.json();
-            token.value = authResponse.data.token;
-            user.value = authResponse.data.user;
-            state.isLoggedIn = true;
+      const response = await fetch(`${apiBaseUrl}/user/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+        body: requestBody,
+      });
 
-            localStorage.setItem('lsToken', authResponse.data.token);
-            localStorage.setItem('userIDToken', authResponse.data.userId);
-            console.log('user is logged in', authResponse);
-            console.log('token', token.value);
-        }
+      console.log("Response Status:", response.status);
+      console.log("Response Headers:", response.headers);
 
-        catch (err) {
-            error.value = (err as Error).message || 'An error occurred';
-            state.isLoggedIn = false;
-        }
+      const responseText = await response.text(); // Read response as text for debugging
+      console.log("Response Text:", responseText);
 
+      if (!response.ok) {
+        console.error("Error Response:", responseText);
+        throw new Error("An error occurred during login");
+      }
+
+      const authResponse = JSON.parse(responseText);
+      token.value = authResponse.data.token;
+      user.value = authResponse.data.user;
+      state.isLoggedIn = true;
+      state.isAdmin = authResponse.data.user.isAdmin;
+
+      localStorage.setItem("lsToken", authResponse.data.token);
+      localStorage.setItem("userIDToken", authResponse.data.user.user_id);
+      localStorage.setItem("isAdmin", String(authResponse.data.user.isAdmin));
+
+      console.log("User logged in successfully:", authResponse);
+      console.log("Token:", token.value);
+    } catch (err) {
+      console.error("Login error:", err);
+      error.value = (err as Error).message || "An error occurred";
+      state.isLoggedIn = false;
+      state.isAdmin = false;
     }
+  };
 
+  // register user
 
+  const registerUser = async (
+    name: string,
+    email: string,
+    phone: string,
+    password: string,
+    dateOfBirth: Date,
+    isAdmin: boolean
+  ): Promise<void> => {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      console.log("ApiBaseUrl:", apiBaseUrl);
+      const response = await fetch(`${apiBaseUrl}/user/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          password,
+          dateOfBirth,
+          isAdmin,
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error("An error occurred");
+      }
 
+      const authResponse = await response.json();
+      token.value = authResponse.data.token;
+      user.value = authResponse.data.user;
 
-
-    // register user
-
-    const registerUser = async( 
-        name: string, 
-        email: string,
-        phone: string,
-        password: string,
-        dateOfBirth: Date,
-        isAdmin: boolean ): Promise<void> => {
-        try{
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-            console.log("ApiBaseUrl:", apiBaseUrl);
-            const response = await fetch(`${apiBaseUrl}/user/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({name, email, phone, password, dateOfBirth, isAdmin})
-            })
-
-            if (!response.ok) {
-                throw new Error('An error occurred');
-            }
-
-            const authResponse = await response.json();
-            token.value = authResponse.data.token;
-            user.value = authResponse.data.user;
-
-            localStorage.setItem('lsToken', authResponse.data.token);
-            console.log('user is registered in', authResponse);
-
-        }
-
-        catch (err) {
-            error.value = (err as Error).message || 'An error occurred';
-
-        }
-
+      localStorage.setItem("lsToken", authResponse.data.token);
+      console.log("user is registered in", authResponse);
+    } catch (err) {
+      error.value = (err as Error).message || "An error occurred";
     }
+  };
 
+  const logout = () => {
+    token.value = null;
+    user.value = null;
+    state.isLoggedIn = false;
+    state.isAdmin = false;
+    localStorage.removeItem("lsToken");
+    console.log("user is logged out");
+  };
 
-
-    const logout = () => {
-        token.value = null;
-        user.value = null;
-        state.isLoggedIn = false;
-        localStorage.removeItem('lsToken'); 
-        console.log('user is logged out');
-    }
-       
-
-    return {
-        token,
-        isLoggedIn: state.isLoggedIn,
-        error,
-        user,
-        name,
-        email,
-        phone,
-        password,
-        dateOfBirth,
-        isAdmin,
-        fetchToken,
-        registerUser,
-        logout
-    }
-
-}
+  return {
+    token,
+    isLoggedIn: state.isLoggedIn,
+    isAdmin: state.isAdmin, // Expose the global isAdmin
+    error,
+    user,
+    name,
+    email,
+    phone,
+    password,
+    dateOfBirth,
+    fetchToken,
+    registerUser,
+    logout,
+  };
+};
