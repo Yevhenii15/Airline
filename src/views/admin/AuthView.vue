@@ -23,7 +23,7 @@
             <input type="text" class="m-2 p-2 border-b border-gray-500 bg-transparent text-gray-300 focus:outline-none flex-1" placeholder="Email"   v-model="email"  /> <!-- v-model for email -->
             <input type="text" class="m-2 p-2 border-b border-gray-500 bg-transparent text-gray-300 focus:outline-none flex-1" placeholder="Phone"  v-model="phone" /> <!-- v-model for phone -->
             <input type="password" class="m-2 p-2 border-b border-gray-500 bg-transparent text-gray-300 focus:outline-none flex-1 w-full" placeholder="Password"  v-model="password" /> <!-- v-model for password -->
-            <input type="date" class="m-2 p-2 border-b border-gray-500 bg-transparent text-gray-300 focus:outline-none flex-1" placeholder="Date of Birth"  v-model="dateOfBirth" /> <!-- v-model for date of birth -->
+            <input type="date" class="m-2 p-2 border-b border-gray-500 bg-transparent text-gray-300 focus:outline-none flex-1"  v-model="dateOfBirth" /> <!-- v-model for date of birth -->
             <button class="bg-[#10B981] text-white p-2 rounded hover:bg-[#059669] w-full mt-4" @click.prevent="registerUser(name, email, phone, password, dateOfBirth, isAdmin)">Register</button> <!-- Register button -->
           </form>
           <button class="bg-red-600 text-white p-2 rounded hover:bg-red-700 w-full mt-2" @click="toggleRegisterDialog">Close</button> <!-- Close button -->

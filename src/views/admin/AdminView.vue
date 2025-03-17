@@ -65,7 +65,7 @@
           </div>
           <input type="text"  placeholder="Image URL" class="p-2 border rounded h-10" /> <!-- Image URL -->
           <span>
-            Thumbnail img: <img alt="Product Image" class="w-full h-24 w-24 object-cover mb-4 rounded-lg"> <!-- Product image -->
+            Thumbnail img: <img alt="Product Image" class="h-24 w-24 object-cover mb-4 rounded-lg"> <!-- Product image -->
           </span>
         </div>
 
