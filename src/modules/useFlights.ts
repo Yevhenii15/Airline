@@ -12,6 +12,7 @@ export const useFlights = () => {
         loading.value = true;
         try {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+            console.log("ApiBaseUrl:", apiBaseUrl);
             const response = await fetch(`${apiBaseUrl}/flights`);
             if (!response.ok) {
                 throw new Error('No data available');

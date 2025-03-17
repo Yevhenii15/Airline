@@ -25,3 +25,13 @@ export interface flightRoute {
   arrivalAirport_id: string;
   duration: string;
 }
+
+export type User = {
+  user_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  dateOfBirth: Date;
+  isAdmin: boolean;
+}
