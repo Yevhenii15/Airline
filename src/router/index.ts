@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import { state } from "../modules/globalStates/state";
+import { watch } from "vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,5 +60,14 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
+
+watch(
+  () => state.isLoggedIn,
+  (newValue) => {
+    if (!newValue) {
+      router.push("/auth");
+    }
+  }
+);
 
 export default router;
