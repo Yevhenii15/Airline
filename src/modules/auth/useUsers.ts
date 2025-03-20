@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { User } from "@/interfaces/interfaces";
 import { state } from "../globalStates/state";
+import { jwtDecode } from "jwt-decode";
 
 export const useUsers = () => {
   const token = ref<string | null>(null);
@@ -114,6 +115,34 @@ export const useUsers = () => {
     console.log("user is logged out");
   };
 
+  const getTokenAndUserId = (): {
+    token: string;
+    userId: string;
+    isAdmin: boolean;
+  } => {
+    const token = localStorage.getItem("lsToken") ?? "";
+    const userId = localStorage.getItem("userIDToken") ?? "";
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+    if (!token || !userId) throw new Error("Authentication required");
+
+    // Decode the token for debugging
+    try {
+      const decodedToken: any = jwtDecode(token);
+
+      // Check if token is expired
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decodedToken.exp < currentTime) {
+        throw new Error("Session expired, please log in again");
+      }
+    } catch (err) {
+      console.error("Invalid token:", err);
+      throw new Error("Invalid token, please log in again");
+    }
+
+    return { token, userId, isAdmin };
+  };
+
   return {
     token,
     isLoggedIn: state.isLoggedIn,
@@ -128,5 +157,6 @@ export const useUsers = () => {
     fetchToken,
     registerUser,
     logout,
+    getTokenAndUserId,
   };
 };
