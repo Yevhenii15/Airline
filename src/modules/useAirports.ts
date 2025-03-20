@@ -1,24 +1,23 @@
-import { ref } from "vue";
 import type { Airport } from "../interfaces/interfaces";
+import { ref } from "vue";
 
 export const useAirports = () => {
+  const airports = ref<Airport[]>([]);
   const error = ref<string | null>(null);
   const loading = ref<boolean>(false);
-  const airports = ref<Airport[]>([]);
 
   const fetchAirports = async (): Promise<void> => {
     loading.value = true;
-
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/airports`);
+      const response = await fetch(`${apiBaseUrl}/airports/all`);
+
       if (!response.ok) {
-        throw new Error("No airport data available");
+        throw new Error("Failed to fetch airports");
       }
 
-      const data: Airport[] = await response.json();
-      airports.value = data;
-      console.log("Airports fetched:", airports.value);
+      airports.value = await response.json();
+      console.log("Fetched airports:", airports.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {
@@ -26,10 +25,5 @@ export const useAirports = () => {
     }
   };
 
-  return {
-    error,
-    loading,
-    airports,
-    fetchAirports,
-  };
+  return { airports, error, loading, fetchAirports };
 };

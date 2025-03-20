@@ -9,18 +9,33 @@
       <h2 class="text-2xl font-semibold mb-4">Add Flight Route</h2>
       <form @submit.prevent="addRouteHandler">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
+          <select
             v-model="newRoute.departureAirport_id"
-            type="text"
-            placeholder="Departure Airport ID"
-            class="p-2 border rounded"
-          />
-          <input
+            class="p-2 border rounded bg-[#2b2b2b] text-white"
+          >
+            <option value="" disabled>Select Departure Airport</option>
+            <option
+              v-for="airport in airports"
+              :key="airport._id"
+              :value="airport.airportCode"
+            >
+              {{ airport.name }} ({{ airport.airportCode }})
+            </option>
+          </select>
+
+          <select
             v-model="newRoute.arrivalAirport_id"
-            type="text"
-            placeholder="Arrival Airport ID"
-            class="p-2 border rounded"
-          />
+            class="p-2 border rounded bg-[#2b2b2b] text-white"
+          >
+            <option value="" disabled>Select Arrival Airport</option>
+            <option
+              v-for="airport in airports"
+              :key="airport._id"
+              :value="airport.airportCode"
+            >
+              {{ airport.name }} ({{ airport.airportCode }})
+            </option>
+          </select>
           <input
             v-model="newRoute.duration"
             type="text"
@@ -42,22 +57,37 @@
       <h2 class="text-2xl font-semibold mb-4">Flight Routes</h2>
       <div
         v-for="route in routes"
-        :key="route.route_id"
+        :key="route._id"
         class="mb-4 p-4 border rounded bg-[#181818]"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
+          <select
             v-model="route.departureAirport_id"
-            type="text"
-            placeholder="Departure Airport ID"
-            class="p-2 border rounded"
-          />
-          <input
+            class="p-2 border rounded bg-[#2b2b2b] text-white"
+          >
+            <option value="" disabled>Select Departure Airport</option>
+            <option
+              v-for="airport in airports"
+              :key="airport._id"
+              :value="airport.airportCode"
+            >
+              {{ airport.name }} ({{ airport.airportCode }})
+            </option>
+          </select>
+
+          <select
             v-model="route.arrivalAirport_id"
-            type="text"
-            placeholder="Arrival Airport ID"
-            class="p-2 border rounded"
-          />
+            class="p-2 border rounded bg-[#2b2b2b] text-white"
+          >
+            <option value="" disabled>Select Arrival Airport</option>
+            <option
+              v-for="airport in airports"
+              :key="airport._id"
+              :value="airport.airportCode"
+            >
+              {{ airport.name }} ({{ airport.airportCode }})
+            </option>
+          </select>
           <input
             v-model="route.duration"
             type="text"
@@ -66,10 +96,10 @@
           />
         </div>
         <div class="mt-4 flex space-x-2">
-          <p>ID: {{ route.route_id }}</p>
+          <p>ID: {{ route._id }}</p>
           <button
             class="bg-red-600 text-white p-2 rounded hover:bg-red-700"
-            @click="deleteRoute(route.route_id)"
+            @click="deleteRoute(route._id)"
           >
             Delete
           </button>
@@ -88,6 +118,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
+import { useAirports } from "../../modules/useAirports";
 import type { flightRoute } from "../../interfaces/interfaces";
 
 const {
@@ -100,7 +131,10 @@ const {
   updateRoute,
 } = useFlightRoutes();
 
+const { airports, fetchAirports } = useAirports();
+
 onMounted(() => {
+  fetchAirports();
   fetchRoutes();
 });
 
@@ -125,7 +159,7 @@ const updateRouteHandler = async (route: flightRoute) => {
     arrivalAirport_id: route.arrivalAirport_id,
     duration: route.duration,
   };
-  await updateRoute(route.route_id, updatedRoute);
+  await updateRoute(route._id, updatedRoute);
 };
 </script>
 

@@ -18,13 +18,13 @@ export interface Seat {
 }
 
 export interface flightRoute {
-  route_id: string;
+  _id: string;
   departureAirport_id: string;
   arrivalAirport_id: string;
   duration: string;
 }
 
-export type NewFlightRoute = Omit<flightRoute, "route_id">;
+export type NewFlightRoute = Omit<flightRoute, "_id">;
 
 export interface Airport {
   _id: string;

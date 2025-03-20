@@ -42,6 +42,15 @@ const router = createRouter({
       path: "/admin_routes",
       name: "admin_routes",
       component: () => import("../views/admin/AdminRoutesView.vue"),
+      meta: {
+        requiresAuth: true,
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: "/admin_airports",
+      name: "admin_airports",
+      component: () => import("../views/admin/AdminAirportView.vue"),
       meta: {},
     },
   ],

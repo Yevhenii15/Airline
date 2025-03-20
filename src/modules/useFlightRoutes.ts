@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import type { flightRoute, NewFlightRoute } from "../interfaces/interfaces";
-import { jwtDecode } from "jwt-decode"; // ✅ Correct import
+import { jwtDecode } from "jwt-decode";
 
 export const useFlightRoutes = () => {
   const error = ref<string | null>(null);
@@ -11,42 +11,13 @@ export const useFlightRoutes = () => {
     loading.value = true;
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      console.log("📌 ApiBaseUrl:", apiBaseUrl);
-      const apiUrl = `${apiBaseUrl}/routes`;
+      const response = await fetch(`${apiBaseUrl}/routes`);
+      if (!response.ok) throw new Error("No data available");
 
-      console.log("📌 Fetching from:", apiUrl);
-
-      const response = await fetch(apiUrl);
-
-      console.log("📌 Full Response Object:", response);
-
-      if (!response.ok) {
-        const errorText = await response.text(); // Read the full response text
-        console.error("❌ Error Response Text:", errorText);
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("📌 Raw API Data:", data);
-
-      // ✅ Explicitly define the type for 'route'
-      routes.value = data.map(
-        (route: {
-          _id: string;
-          departureAirport_id: string;
-          arrivalAirport_id: string;
-          duration: string;
-        }) => ({
-          route_id: route._id, // Ensure compatibility with Vue template
-          departureAirport_id: route.departureAirport_id,
-          arrivalAirport_id: route.arrivalAirport_id,
-          duration: route.duration,
-        })
-      );
-
-      console.log("✅ Mapped Routes:", routes.value);
+      const data: flightRoute[] = await response.json();
+      routes.value.splice(0, routes.value.length, ...data); // Force reactivity
+      console.log("Routes fetched", routes.value);
     } catch (err) {
-      console.error("❌ Fetch error:", err);
       error.value = (err as Error).message;
     } finally {
       loading.value = false;
@@ -113,9 +84,9 @@ export const useFlightRoutes = () => {
     }
   };
 
-  const deleteRoute = async (route_id: string): Promise<void> => {
+  const deleteRoute = async (_id: string): Promise<void> => {
     try {
-      if (!route_id) {
+      if (!_id) {
         console.error("❌ ERROR: Missing route ID! Cannot delete.");
         return;
       }
@@ -124,7 +95,7 @@ export const useFlightRoutes = () => {
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/routes/${route_id}`, {
+      const response = await fetch(`${apiBaseUrl}/routes/${_id}`, {
         method: "DELETE",
         headers: { "auth-token": token },
       });
@@ -135,10 +106,8 @@ export const useFlightRoutes = () => {
       }
 
       // Update frontend state after deletion
-      routes.value = routes.value.filter(
-        (route) => route.route_id !== route_id
-      );
-      console.log("✅ Route deleted:", route_id);
+      routes.value = routes.value.filter((route) => route._id !== _id);
+      console.log("✅ Route deleted:", _id);
     } catch (err) {
       console.error("❌ Error in deleteRoute:", err);
       error.value = (err as Error).message;
@@ -153,6 +122,7 @@ export const useFlightRoutes = () => {
       const { token, isAdmin } = getTokenAndUserId();
 
       if (!isAdmin) throw new Error("Access Denied: Admins only");
+
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(`${apiBaseUrl}/routes/${id}`, {
         method: "PUT",
@@ -163,10 +133,17 @@ export const useFlightRoutes = () => {
       if (!response.ok) throw new Error("Failed to update route");
 
       const updatedData: flightRoute = await response.json();
-      const index = routes.value.findIndex((route) => route.route_id === id);
-      if (index !== -1) routes.value[index] = updatedData;
 
-      console.log("Route updated", updatedData);
+      // Find index of the updated route and replace it while preserving `_id`
+      const index = routes.value.findIndex((route) => route._id === id);
+      if (index !== -1) {
+        routes.value[index] = {
+          ...updatedData,
+          _id: id, // Ensure _id remains unchanged
+        };
+      }
+
+      console.log("Route updated", routes.value[index]);
     } catch (err) {
       error.value = (err as Error).message;
     }
