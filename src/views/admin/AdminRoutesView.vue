@@ -1,17 +1,26 @@
 <template>
-  <div class="bg-[#181818] min-h-screen lazy-css">
-    <h1 class="text-3xl font-bold mb-8">Admin View - Flight Routes</h1>
-    <div v-if="loading" class="text-center">Loading...</div>
-    <div v-else-if="error" class="text-center text-red-500">{{ error }}</div>
+  <div class="bg-[#181818] min-h-screen p-6 text-white">
+    <h1 class="text-3xl font-bold text-center mb-8">
+      ✈️ Admin View - Flight Routes
+    </h1>
+
+    <div v-if="loading" class="text-center text-blue-400 text-lg">
+      ⏳ Loading...
+    </div>
+    <div v-else-if="error" class="text-center text-red-500 font-semibold">
+      {{ error }}
+    </div>
 
     <!-- Add new route section -->
-    <div class="my-8 p-2 w-full">
-      <h2 class="text-2xl font-semibold mb-4">Add Flight Route</h2>
+    <div class="my-8 p-6 bg-[#222222] rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold text-blue-400 mb-4">
+        ➕ Add Flight Route
+      </h2>
       <form @submit.prevent="addRouteHandler">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <select
             v-model="newRoute.departureAirport_id"
-            class="p-2 border rounded bg-[#2b2b2b] text-white"
+            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           >
             <option value="" disabled>Select Departure Airport</option>
             <option
@@ -25,7 +34,7 @@
 
           <select
             v-model="newRoute.arrivalAirport_id"
-            class="p-2 border rounded bg-[#2b2b2b] text-white"
+            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           >
             <option value="" disabled>Select Arrival Airport</option>
             <option
@@ -36,34 +45,37 @@
               {{ airport.name }} ({{ airport.airportCode }})
             </option>
           </select>
+
           <input
             v-model="newRoute.duration"
             type="text"
             placeholder="Duration (hh:mm)"
-            class="p-2 border rounded"
+            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
         </div>
         <button
           type="submit"
-          class="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          class="mt-4 w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
         >
-          Create Route
+          ✈️ Create Route
         </button>
       </form>
     </div>
 
-    <!-- Edit existing routes -->
-    <div class="my-8 p-2 w-full">
-      <h2 class="text-2xl font-semibold mb-4">Flight Routes</h2>
+    <!-- Flight Routes List -->
+    <div class="my-8 p-6 bg-[#222222] rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold text-green-400 mb-4">
+        📋 Flight Routes
+      </h2>
       <div
         v-for="route in routes"
         :key="route._id"
-        class="mb-4 p-4 border rounded bg-[#181818]"
+        class="mb-4 p-4 bg-[#2b2b2b] rounded-lg shadow"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <select
             v-model="route.departureAirport_id"
-            class="p-2 border rounded bg-[#2b2b2b] text-white"
+            class="p-3 border border-gray-600 rounded bg-[#333333] text-white focus:ring focus:ring-blue-500"
           >
             <option value="" disabled>Select Departure Airport</option>
             <option
@@ -77,7 +89,7 @@
 
           <select
             v-model="route.arrivalAirport_id"
-            class="p-2 border rounded bg-[#2b2b2b] text-white"
+            class="p-3 border border-gray-600 rounded bg-[#333333] text-white focus:ring focus:ring-blue-500"
           >
             <option value="" disabled>Select Arrival Airport</option>
             <option
@@ -88,27 +100,31 @@
               {{ airport.name }} ({{ airport.airportCode }})
             </option>
           </select>
+
           <input
             v-model="route.duration"
             type="text"
             placeholder="Duration (hh:mm)"
-            class="p-2 border rounded"
+            class="p-3 border border-gray-600 rounded bg-[#333333] text-white focus:ring focus:ring-blue-500"
           />
         </div>
-        <div class="mt-4 flex space-x-2">
-          <p>ID: {{ route._id }}</p>
-          <button
-            class="bg-red-600 text-white p-2 rounded hover:bg-red-700"
-            @click="deleteRoute(route._id)"
-          >
-            Delete
-          </button>
-          <button
-            class="bg-green-600 text-white p-2 rounded hover:bg-green-700"
-            @click="updateRouteHandler(route)"
-          >
-            Edit
-          </button>
+
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-gray-400 text-sm">🆔 ID: {{ route._id }}</p>
+          <div class="flex space-x-2">
+            <button
+              class="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition"
+              @click="deleteRoute(route._id)"
+            >
+              🗑 Delete
+            </button>
+            <button
+              class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition"
+              @click="updateRouteHandler(route)"
+            >
+              ✏️ Edit
+            </button>
+          </div>
         </div>
       </div>
     </div>

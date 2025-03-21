@@ -1,8 +1,8 @@
 export interface Flight {
-  flight_id: string;
+  _id: string;
   flightNumber: string;
-  departureTime: Date;
-  arrivalTime: Date;
+  departureTime: string;
+  arrivalTime: string;
   status: string;
   seats: Seat[];
   route: flightRoute;
@@ -11,8 +11,10 @@ export interface Flight {
   seatMap: string[];
 }
 
+export type NewFlight = Omit<Flight, "_id">;
+
 export interface Seat {
-  seat_id: string;
+  _id: string;
   seatNumber: string;
   status: string;
 }
@@ -35,11 +37,11 @@ export interface Airport {
 }
 
 export type User = {
-  user_id: string;
+  _id: string;
   name: string;
   email: string;
   phone: string;
   password: string;
-  dateOfBirth: Date;
+  dateOfBirth: string;
   isAdmin: boolean;
 };

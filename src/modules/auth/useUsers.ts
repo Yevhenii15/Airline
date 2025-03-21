@@ -50,7 +50,7 @@ export const useUsers = () => {
       state.isAdmin = authResponse.data.user.isAdmin;
 
       localStorage.setItem("lsToken", authResponse.data.token);
-      localStorage.setItem("userIDToken", authResponse.data.user.user_id);
+      localStorage.setItem("userIDToken", authResponse.data.user._id);
       localStorage.setItem("isAdmin", String(authResponse.data.user.isAdmin));
 
       console.log("User logged in successfully:", authResponse);
