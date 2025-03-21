@@ -45,3 +45,13 @@ export type User = {
   dateOfBirth: string;
   isAdmin: boolean;
 };
+
+
+export interface AbooutCompany {
+  _id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  email: string;
+}
