@@ -23,6 +23,7 @@
           <div>
             <label class="block text-gray-700 font-medium">Description</label>
             <p class="text-black">{{ companyData.description }}</p>
+            
           </div>
 
           <div>
