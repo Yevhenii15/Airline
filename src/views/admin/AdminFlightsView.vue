@@ -22,11 +22,11 @@
           />
 
           <select
-            v-model="newFlight.route"
+            v-model="newFlight.route._id"
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           >
             <option value="" disabled>Select Route</option>
-            <option v-for="route in routes" :key="route._id" :value="route">
+            <option v-for="route in routes" :key="route._id" :value="route._id">
               {{ getRouteName(route) }}
             </option>
           </select>
@@ -181,11 +181,18 @@ onMounted(() => {
   fetchRoutes();
   fetchFlights();
 });
-
+// Function to get current date-time in "YYYY-MM-DDTHH:MM" format
+const getCurrentDateTime = () => {
+  const now = new Date();
+  return now.toISOString().slice(0, 16);
+};
+const formatDateForInput = (date: Date) => {
+  return date.toISOString().slice(0, 16); // Trims the milliseconds and 'Z'
+};
 const newFlight = ref<NewFlight>({
   flightNumber: "",
-  departureTime: "",
-  arrivalTime: "",
+  departureTime: formatDateForInput(new Date()), // Set current time
+  arrivalTime: formatDateForInput(new Date()), // Set current time
   status: "Scheduled",
   route: {
     // ✅ Store the full object
@@ -211,8 +218,8 @@ const addFlightHandler = async () => {
   // Reset form
   newFlight.value = {
     flightNumber: "",
-    departureTime: "",
-    arrivalTime: "",
+    departureTime: getCurrentDateTime(),
+    arrivalTime: getCurrentDateTime(),
     status: "Scheduled",
     route: {
       // Reset to an empty object
@@ -230,7 +237,11 @@ const addFlightHandler = async () => {
 const editableFlight = ref<Flight | null>(null);
 
 const updateFlightHandler = (flight: Flight) => {
-  editableFlight.value = { ...flight }; // Clone the flight object for editing
+  editableFlight.value = {
+    ...flight,
+    departureTime: formatDateForInput(new Date(flight.departureTime)), // Convert format
+    arrivalTime: formatDateForInput(new Date(flight.arrivalTime)), // Convert format
+  }; // Clone the flight object for editing
 };
 const saveUpdatedFlight = async () => {
   if (!editableFlight.value) return;
@@ -251,6 +262,12 @@ const getRouteName = (route: any) => {
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString();
+  return new Date(dateString).toLocaleString(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 </script>
