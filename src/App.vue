@@ -8,8 +8,9 @@
         <RouterLink to="/auth" class="mr-4">Auth</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin" class="mr-4">Admin</RouterLink>
         <RouterLink v-if="isAdmin" to="/admin_aboutCompany" class="mr-4">AboutADMIN</RouterLink>
-        
 
+
+        
         <button v-if="isLoggedin" @click="logout">LogOut</button>
 
         <!-- RouterLink to products, Auth, Admin & and logout button -->
