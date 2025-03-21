@@ -70,12 +70,21 @@ export const useUsers = () => {
     email: string,
     phone: string,
     password: string,
-    dateOfBirth: Date,
-    isAdmin: boolean
+    dateOfBirth: Date
   ): Promise<void> => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       console.log("ApiBaseUrl:", apiBaseUrl);
+
+      // Log the registration payload
+      console.log("Registration Payload:", {
+        name,
+        email,
+        phone,
+        password,
+        dateOfBirth,
+      });
+
       const response = await fetch(`${apiBaseUrl}/user/register`, {
         method: "POST",
         headers: {
@@ -87,12 +96,13 @@ export const useUsers = () => {
           phone,
           password,
           dateOfBirth,
-          isAdmin,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("An error occurred");
+        const errorText = await response.text(); // Read the error message from the response
+        console.error("Error Response:", errorText);
+        throw new Error("An error occurred while registering the user.");
       }
 
       const authResponse = await response.json();
@@ -100,9 +110,12 @@ export const useUsers = () => {
       user.value = authResponse.data.user;
 
       localStorage.setItem("lsToken", authResponse.data.token);
-      console.log("user is registered in", authResponse);
+      console.log("User is registered:", authResponse);
     } catch (err) {
-      error.value = (err as Error).message || "An error occurred";
+      console.error("Registration error:", err);
+      error.value =
+        (err as Error).message ||
+        "An error occurred while registering the user";
     }
   };
 

@@ -42,10 +42,9 @@ export type User = {
   email: string;
   phone: string;
   password: string;
-  dateOfBirth: string;
+  dateOfBirth: Date;
   isAdmin: boolean;
 };
-
 
 export interface AbooutCompany {
   _id: string;
