@@ -11,7 +11,7 @@ export interface Flight {
   seatMap: string[];
 }
 
-export type NewFlight = Omit<Flight, "_id">;
+export type NewFlight = Omit<Flight, "_id" | "arrivalTime">;
 
 export interface Seat {
   _id: string;

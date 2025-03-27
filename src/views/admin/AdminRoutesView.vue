@@ -46,12 +46,15 @@
             </option>
           </select>
 
-          <input
+          <select
             v-model="newRoute.duration"
-            type="text"
-            placeholder="Duration (hh:mm)"
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
-          />
+          >
+            <option value="" disabled>Select Duration</option>
+            <option v-for="time in durations" :key="time" :value="time">
+              {{ time }}
+            </option>
+          </select>
         </div>
         <button
           type="submit"
@@ -101,12 +104,15 @@
             </option>
           </select>
 
-          <input
+          <select
             v-model="route.duration"
-            type="text"
-            placeholder="Duration (hh:mm)"
             class="p-3 border border-gray-600 rounded bg-[#333333] text-white focus:ring focus:ring-blue-500"
-          />
+          >
+            <option value="" disabled>Select Duration</option>
+            <option v-for="time in durations" :key="time" :value="time">
+              {{ time }}
+            </option>
+          </select>
         </div>
 
         <div class="mt-4 flex items-center justify-between">
@@ -177,6 +183,21 @@ const updateRouteHandler = async (route: flightRoute) => {
   };
   await updateRoute(route._id, updatedRoute);
 };
+const durations = ref<string[]>([]);
+
+for (let hour = 0; hour <= 10; hour++) {
+  // Add the full hour times first (e.g., 01:00, 02:00)
+  const formattedHour = hour.toString().padStart(2, "0");
+  durations.value.push(`${formattedHour}:00`);
+
+  // Then add the 15, 30, and 45 minute intervals
+  for (let minute = 15; minute < 60; minute += 15) {
+    const formattedMinute = minute.toString().padStart(2, "0");
+    durations.value.push(`${formattedHour}:${formattedMinute}`);
+  }
+}
+
+console.log(durations.value);
 </script>
 
 <style scoped>

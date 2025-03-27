@@ -38,12 +38,6 @@
           />
 
           <input
-            v-model="newFlight.arrivalTime"
-            type="datetime-local"
-            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
-          />
-
-          <input
             v-model="newFlight.aircraft_id"
             type="text"
             placeholder="Aircraft ID"
@@ -100,12 +94,6 @@
             />
 
             <input
-              v-model="editableFlight.arrivalTime"
-              type="datetime-local"
-              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
-            />
-
-            <input
               v-model="editableFlight.aircraft_id"
               type="text"
               placeholder="Aircraft ID"
@@ -139,6 +127,9 @@
             {{ formatDate(flight.arrivalTime) }}
           </p>
           <p class="text-gray-400 text-sm">🆔 ID: {{ flight._id }}</p>
+          <p class="text-gray-400 text-sm">
+            🛩️ Aircraft Type: {{ flight.aircraft_id }}
+          </p>
 
           <div class="mt-4 flex space-x-2">
             <button
@@ -181,21 +172,26 @@ onMounted(() => {
   fetchRoutes();
   fetchFlights();
 });
-// Function to get current date-time in "YYYY-MM-DDTHH:MM" format
+
+// Function to get the current date-time in local "YYYY-MM-DDTHH:MM" format
 const getCurrentDateTime = () => {
   const now = new Date();
-  return now.toISOString().slice(0, 16);
+  // Ensure the date-time is local
+  const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000); // Adjust to local time zone
+  return localTime.toISOString().slice(0, 16);
 };
+
 const formatDateForInput = (date: Date) => {
-  return date.toISOString().slice(0, 16); // Trims the milliseconds and 'Z'
+  // Convert the date to local time before formatting for input
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16); // Trims the milliseconds and 'Z'
 };
+
 const newFlight = ref<NewFlight>({
   flightNumber: "",
-  departureTime: formatDateForInput(new Date()), // Set current time
-  arrivalTime: formatDateForInput(new Date()), // Set current time
+  departureTime: getCurrentDateTime(), // Use local time
   status: "Scheduled",
   route: {
-    // ✅ Store the full object
     _id: "",
     departureAirport_id: "",
     arrivalAirport_id: "",
@@ -213,16 +209,14 @@ const addFlightHandler = async () => {
     return;
   }
 
-  await addFlight(newFlight.value); // ✅ Sends the full route object
+  await addFlight(newFlight.value); // Sends the full route object
 
   // Reset form
   newFlight.value = {
     flightNumber: "",
     departureTime: getCurrentDateTime(),
-    arrivalTime: getCurrentDateTime(),
     status: "Scheduled",
     route: {
-      // Reset to an empty object
       _id: "",
       departureAirport_id: "",
       arrivalAirport_id: "",
@@ -234,15 +228,16 @@ const addFlightHandler = async () => {
     seats: [],
   };
 };
+
 const editableFlight = ref<Flight | null>(null);
 
 const updateFlightHandler = (flight: Flight) => {
   editableFlight.value = {
     ...flight,
-    departureTime: formatDateForInput(new Date(flight.departureTime)), // Convert format
-    arrivalTime: formatDateForInput(new Date(flight.arrivalTime)), // Convert format
-  }; // Clone the flight object for editing
+    departureTime: formatDateForInput(new Date(flight.departureTime)), // Convert format to local time
+  };
 };
+
 const saveUpdatedFlight = async () => {
   if (!editableFlight.value) return;
 
@@ -256,13 +251,13 @@ const saveUpdatedFlight = async () => {
 };
 
 const getRouteName = (route: any) => {
-  if (!route || !route._id) return "Unknown Route"; // ✅ Ensure valid route
-
+  if (!route || !route._id) return "Unknown Route";
   return `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString(undefined, {
+  const localDate = new Date(dateString);
+  return localDate.toLocaleString(undefined, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
