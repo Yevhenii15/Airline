@@ -49,7 +49,7 @@ export default {
   transition: 0.3s;
 }
 .admin-card:hover {
-  background: #007bff;
+  background: #ff7f50;
   color: white;
 }
 </style>
