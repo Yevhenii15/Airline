@@ -24,16 +24,10 @@
           v-model="password"
         />
         <button
-          class="bg-[#FF7F50] text-white p-2 rounded hover:bg-[#FF4500] w-full mt-4"
+          class="bg-[#FF7F50] text-white p-2 rounded hover:bg-[#ff4500] w-full mt-4"
           @click="fetchToken(email, password)"
         >
           Login
-        </button>
-        <button
-          class="bg-[#4B5563] text-white p-2 rounded hover:bg-[#374151] w-full mt-2"
-          @click="logout()"
-        >
-          Logout
         </button>
       </div>
 
@@ -155,7 +149,5 @@ button {
   font-weight: bold;
 }
 
-button:hover {
-  transform: scale(1.05);
-}
+
 </style>
