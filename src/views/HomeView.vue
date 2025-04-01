@@ -52,7 +52,6 @@ export default {
 .home-container {
   text-align: center;
   padding: 20px;
-  background: url('/assets/beautiful-sky.jpg') center/cover no-repeat;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
