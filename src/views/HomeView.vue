@@ -48,7 +48,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .home-container {
   text-align: center;
