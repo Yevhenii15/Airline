@@ -2,7 +2,6 @@
   <div class="app-container">
     <header class="navbar">
       <div class="nav-wrapper">
-        <!-- Wrap the logo with RouterLink to navigate to home -->
         <RouterLink to="/" class="nav-logo">
           <h1>FlyEAZY</h1>
         </RouterLink>

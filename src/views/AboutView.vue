@@ -5,7 +5,7 @@
         Company Information
       </h2>
 
-      <div v-if="loading" class="text-center text-xl font-semibold text-blue-600">
+      <div v-if="loading" class="text-center text-xl font-semibold text-orange-500">
         Updating information...
       </div>
       <div v-else-if="error" class="text-center text-red-500 text-xl">

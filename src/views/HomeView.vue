@@ -109,7 +109,7 @@ export default {
   font-weight: bold;
 }
 .info-card:hover {
-  background: #007bff;
+  background: #ff7f50;
   color: white;
   transform: scale(1.05);
 }

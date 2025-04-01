@@ -31,6 +31,7 @@ export default {
 }
 .title {
   font-size: 24px;
+  color: #ff7f50;
   margin-bottom: 20px;
 }
 .admin-grid {
