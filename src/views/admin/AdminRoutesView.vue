@@ -3,10 +3,13 @@
     <h1 class="text-3xl font-bold text-center mb-8">
       ✈️ Admin View - Flight Routes
     </h1>
-
-    <div v-if="loading" class="text-center text-blue-400 text-lg">
+    <div
+      v-if="loadingRoutes || loadingAirports"
+      class="text-center text-blue-400 text-lg"
+    >
       ⏳ Loading...
     </div>
+
     <div v-else-if="error" class="text-center text-red-500 font-semibold">
       {{ error }}
     </div>
@@ -146,14 +149,14 @@ import type { flightRoute } from "../../interfaces/interfaces";
 const {
   routes,
   error,
-  loading,
+  loading: loadingRoutes, // Rename to avoid conflicts
   fetchRoutes,
   deleteRoute,
   addRoute,
   updateRoute,
 } = useFlightRoutes();
 
-const { airports, fetchAirports } = useAirports();
+const { airports, fetchAirports, loading: loadingAirports } = useAirports(); // Add loadingAirports
 
 onMounted(() => {
   fetchAirports();
