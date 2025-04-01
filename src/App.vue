@@ -11,6 +11,7 @@
 
 
         
+        
         <button v-if="isLoggedin" @click="logout">LogOut</button>
 
         <!-- RouterLink to products, Auth, Admin & and logout button -->
