@@ -2,6 +2,7 @@ import { ref } from "vue";
 import type { User } from "@/interfaces/interfaces";
 import { state } from "../globalStates/state";
 import { jwtDecode } from "jwt-decode";
+import { makeRequest } from "../functions/makeRequest"; // ✅ Import reusable request function
 
 export const useUsers = () => {
   const token = ref<string | null>(null);
@@ -13,58 +14,27 @@ export const useUsers = () => {
   const phone = ref<string>("");
   const password = ref<string>("");
   const dateOfBirth = ref<Date>(new Date());
-  const isAdmin = ref<boolean>(false); // Local isAdmin
 
+  // 🌟 Fetch Token (Login)
   const fetchToken = async (email: string, password: string): Promise<void> => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      console.log("ApiBaseUrl:", apiBaseUrl);
-
-      const requestBody = JSON.stringify({ email, password });
-      console.log("Request Body:", requestBody);
-
-      const response = await fetch(`${apiBaseUrl}/user/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "auth-token": localStorage.getItem("lsToken") || "",
-        },
-        body: requestBody,
+      const authResponse = await makeRequest("/user/login", "POST", {
+        email,
+        password,
       });
 
-      console.log("Response Status:", response.status);
-      console.log("Response Headers:", response.headers);
-
-      const responseText = await response.text(); // Read response as text for debugging
-      console.log("Response Text:", responseText);
-
-      if (!response.ok) {
-        console.error("Error Response:", responseText);
-        throw new Error("An error occurred during login");
-      }
-
-      const authResponse = JSON.parse(responseText);
       token.value = authResponse.data.token;
       user.value = authResponse.data.user;
-      state.isLoggedIn = true;
-      state.isAdmin = authResponse.data.user.isAdmin;
 
-      localStorage.setItem("lsToken", authResponse.data.token);
-      localStorage.setItem("userIDToken", authResponse.data.user._id);
-      localStorage.setItem("isAdmin", String(authResponse.data.user.isAdmin));
-
+      updateAuthState(authResponse.data.token, authResponse.data.user);
       console.log("User logged in successfully:", authResponse);
-      console.log("Token:", token.value);
     } catch (err) {
-      console.error("Login error:", err);
-      error.value = (err as Error).message || "An error occurred";
-      state.isLoggedIn = false;
-      state.isAdmin = false;
+      error.value = (err as Error).message;
+      resetAuthState();
     }
   };
 
-  // register user
-
+  // 🌟 Register User
   const registerUser = async (
     name: string,
     email: string,
@@ -73,11 +43,7 @@ export const useUsers = () => {
     dateOfBirth: Date
   ): Promise<void> => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      console.log("ApiBaseUrl:", apiBaseUrl);
-
-      // Log the registration payload
-      console.log("Registration Payload:", {
+      const authResponse = await makeRequest("/user/register", "POST", {
         name,
         email,
         phone,
@@ -85,67 +51,38 @@ export const useUsers = () => {
         dateOfBirth,
       });
 
-      const response = await fetch(`${apiBaseUrl}/user/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          password,
-          dateOfBirth,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text(); // Read the error message from the response
-        console.error("Error Response:", errorText);
-        throw new Error("An error occurred while registering the user.");
-      }
-
-      const authResponse = await response.json();
       token.value = authResponse.data.token;
       user.value = authResponse.data.user;
 
-      localStorage.setItem("lsToken", authResponse.data.token);
-      console.log("User is registered:", authResponse);
+      updateAuthState(authResponse.data.token, authResponse.data.user);
+      console.log("User registered successfully:", authResponse);
     } catch (err) {
-      console.error("Registration error:", err);
-      error.value =
-        (err as Error).message ||
-        "An error occurred while registering the user";
+      error.value = (err as Error).message;
     }
   };
 
-  const logout = () => {
-    token.value = null;
-    user.value = null;
-    state.isLoggedIn = false;
-    state.isAdmin = false;
-    localStorage.removeItem("lsToken");
-    console.log("user is logged out");
+  // 🌟 Logout
+  const logout = (): void => {
+    resetAuthState();
+    console.log("User logged out");
   };
 
+  // 🌟 Get Token and User ID
   const getTokenAndUserId = (): {
     token: string;
     userId: string;
     isAdmin: boolean;
   } => {
-    const token = localStorage.getItem("lsToken") ?? "";
-    const userId = localStorage.getItem("userIDToken") ?? "";
+    const token = localStorage.getItem("lsToken") || "";
+    const userId = localStorage.getItem("userIDToken") || "";
     const isAdmin = localStorage.getItem("isAdmin") === "true";
 
     if (!token || !userId) throw new Error("Authentication required");
 
-    // Decode the token for debugging
+    // Decode and check token expiration
     try {
       const decodedToken: any = jwtDecode(token);
-
-      // Check if token is expired
-      const currentTime = Math.floor(Date.now() / 1000);
-      if (decodedToken.exp < currentTime) {
+      if (decodedToken.exp < Math.floor(Date.now() / 1000)) {
         throw new Error("Session expired, please log in again");
       }
     } catch (err) {
@@ -156,10 +93,33 @@ export const useUsers = () => {
     return { token, userId, isAdmin };
   };
 
+  // 🌟 Helper: Update Authentication State
+  const updateAuthState = (newToken: string, userData: User) => {
+    token.value = newToken;
+    user.value = userData;
+    state.isLoggedIn = true;
+    state.isAdmin = userData.isAdmin;
+
+    localStorage.setItem("lsToken", newToken);
+    localStorage.setItem("userIDToken", userData._id);
+    localStorage.setItem("isAdmin", String(userData.isAdmin));
+  };
+
+  // 🌟 Helper: Reset Authentication State
+  const resetAuthState = () => {
+    token.value = null;
+    user.value = null;
+    state.isLoggedIn = false;
+    state.isAdmin = false;
+    localStorage.removeItem("lsToken");
+    localStorage.removeItem("userIDToken");
+    localStorage.removeItem("isAdmin");
+  };
+
   return {
     token,
     isLoggedIn: state.isLoggedIn,
-    isAdmin: state.isAdmin, // Expose the global isAdmin
+    isAdmin: state.isAdmin,
     error,
     user,
     name,

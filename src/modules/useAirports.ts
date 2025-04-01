@@ -1,6 +1,7 @@
 import type { Airport } from "../interfaces/interfaces";
 import { ref } from "vue";
 import { useUsers } from "./auth/useUsers";
+import { makeRequest } from "./functions/makeRequest";
 const { getTokenAndUserId } = useUsers();
 
 export const useAirports = () => {
@@ -12,14 +13,9 @@ export const useAirports = () => {
   const fetchAirports = async (): Promise<void> => {
     loading.value = true;
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/airports/all`);
+      const data = await makeRequest("/airports/all", "GET");
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch airports");
-      }
-
-      airports.value = await response.json();
+      airports.value = data;
       console.log("Fetched airports:", airports.value);
     } catch (err) {
       error.value = (err as Error).message;
@@ -27,6 +23,7 @@ export const useAirports = () => {
       loading.value = false;
     }
   };
+
   /**
    * Fetch a single airport from RapidAPI and store it in MongoDB
    */
@@ -45,22 +42,13 @@ export const useAirports = () => {
 
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(
-        `${apiBaseUrl}/airports/fetch/${airportCode}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "auth-token": token,
-          },
-        }
+      const data = await makeRequest(
+        `/airports/fetch/${airportCode}`,
+        "GET",
+        undefined,
+        true
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch airport details");
-      }
-
-      const data = await response.json();
       airport.value = data.airport;
       console.log("Fetched airport:", airport.value);
     } catch (err) {
@@ -80,16 +68,12 @@ export const useAirports = () => {
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/airports/${_id}`, {
-        method: "DELETE",
-        headers: { "auth-token": token },
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.error || "Failed to delete airport");
-      }
+      const response = await makeRequest(
+        `/airports/${_id}`,
+        "DELETE",
+        undefined,
+        true
+      );
 
       // Update frontend state after deletion
       airports.value = airports.value.filter((airport) => airport._id !== _id);

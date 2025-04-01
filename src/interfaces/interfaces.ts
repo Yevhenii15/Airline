@@ -46,7 +46,7 @@ export type User = {
   isAdmin: boolean;
 };
 
-export interface AbooutCompany {
+export interface AboutCompany {
   _id: string;
   name: string;
   description: string;

@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import type { flightRoute, NewFlightRoute } from "../interfaces/interfaces";
 import { useUsers } from "./auth/useUsers";
+import { makeRequest } from "./functions/makeRequest";
+
 const { getTokenAndUserId } = useUsers();
 
 export const useFlightRoutes = () => {
@@ -11,11 +13,7 @@ export const useFlightRoutes = () => {
   const fetchRoutes = async (): Promise<void> => {
     loading.value = true;
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/routes`);
-      if (!response.ok) throw new Error("No data available");
-
-      const data: flightRoute[] = await response.json();
+      const data: flightRoute[] = await makeRequest("/routes", "GET");
       routes.value.splice(0, routes.value.length, ...data); // Force reactivity
       console.log("Routes fetched", routes.value);
     } catch (err) {
@@ -28,28 +26,16 @@ export const useFlightRoutes = () => {
   const addRoute = async (route: NewFlightRoute): Promise<void> => {
     try {
       const { token, isAdmin } = getTokenAndUserId();
-
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/routes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "auth-token": token,
-        },
-        body: JSON.stringify(route),
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        console.error("Server response error:", errorResponse);
-        throw new Error(errorResponse.error || "No data available");
-      }
-
-      const newRoute: flightRoute = await response.json();
+      const newRoute: flightRoute = await makeRequest(
+        "/routes",
+        "POST",
+        route,
+        true
+      );
       routes.value.push(newRoute);
-      console.log(" New route added", newRoute);
+      console.log("New route added", newRoute);
 
       await fetchRoutes();
     } catch (err) {
@@ -67,16 +53,7 @@ export const useFlightRoutes = () => {
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/routes/${_id}`, {
-        method: "DELETE",
-        headers: { "auth-token": token },
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.error || "Failed to delete route");
-      }
+      await makeRequest(`/routes/${_id}`, "DELETE", undefined, true);
 
       // Update frontend state after deletion
       routes.value = routes.value.filter((route) => route._id !== _id);
@@ -93,19 +70,14 @@ export const useFlightRoutes = () => {
   ): Promise<void> => {
     try {
       const { token, isAdmin } = getTokenAndUserId();
-
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/routes/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "auth-token": token },
-        body: JSON.stringify(updatedRoute),
-      });
-
-      if (!response.ok) throw new Error("Failed to update route");
-
-      const updatedData: flightRoute = await response.json();
+      const updatedData: flightRoute = await makeRequest(
+        `/routes/${id}`,
+        "PUT",
+        updatedRoute,
+        true
+      );
 
       // Find index of the updated route and replace it while preserving `_id`
       const index = routes.value.findIndex((route) => route._id === id);

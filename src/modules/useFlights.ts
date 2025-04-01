@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { Flight, NewFlight } from "@/interfaces/interfaces";
 import { useUsers } from "./auth/useUsers";
+import { makeRequest } from "./functions/makeRequest"; // Added makeRequest import
 const { getTokenAndUserId } = useUsers();
 
 export const useFlights = () => {
@@ -11,14 +12,7 @@ export const useFlights = () => {
   const fetchFlights = async (): Promise<void> => {
     loading.value = true;
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      console.log("ApiBaseUrl:", apiBaseUrl);
-      const response = await fetch(`${apiBaseUrl}/flights`);
-      if (!response.ok) {
-        throw new Error("No data available");
-      }
-
-      const data: Flight[] = await response.json();
+      const data: Flight[] = await makeRequest("/flights", "GET"); // Replaced fetch with makeRequest
       flights.value = data;
       console.log("Flights fetched", flights.value);
     } catch (err) {
@@ -34,25 +28,14 @@ export const useFlights = () => {
 
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/flights`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "auth-token": token,
-        },
-        body: JSON.stringify(flight),
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        console.error("Server response error:", errorResponse);
-        throw new Error(errorResponse.error || "No data available");
-      }
-
-      const newFlight: Flight = await response.json();
+      const newFlight: Flight = await makeRequest(
+        "/flights",
+        "POST",
+        flight,
+        true
+      ); // Replaced fetch with makeRequest
       flights.value.push(newFlight);
-      console.log(" New flight added", newFlight);
+      console.log("New flight added", newFlight);
 
       await fetchFlights();
     } catch (err) {
@@ -70,16 +53,7 @@ export const useFlights = () => {
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/flights/${_id}`, {
-        method: "DELETE",
-        headers: { "auth-token": token },
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.error || "Failed to delete flight");
-      }
+      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true); // Replaced fetch with makeRequest
 
       // Update frontend state after deletion
       flights.value = flights.value.filter((flight) => flight._id !== _id);
@@ -99,30 +73,19 @@ export const useFlights = () => {
 
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${apiBaseUrl}/flights/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "auth-token": token },
-        body: JSON.stringify(updatedFlight),
-      });
+      const updatedData: Flight = await makeRequest(
+        `/flights/${id}`,
+        "PUT",
+        updatedFlight,
+        true
+      ); // Replaced fetch with makeRequest
 
-      if (!response.ok) {
-        const errorText = await response.text(); // Read response as text
-        throw new Error(errorText); // Throw the actual server error message
+      // Find index of the updated flight and replace it while preserving `_id`
+      const index = flights.value.findIndex((flight) => flight._id === id);
+      if (index !== -1) {
+        flights.value[index] = { ...updatedData, _id: id };
       }
-
-      const contentType = response.headers.get("content-type");
-
-      if (contentType && contentType.includes("application/json")) {
-        const updatedData: Flight = await response.json();
-        const index = flights.value.findIndex((flight) => flight._id === id);
-        if (index !== -1) {
-          flights.value[index] = { ...updatedData, _id: id };
-        }
-        console.log("Flight updated", flights.value[index]);
-      } else {
-        console.log("Flight updated successfully (no JSON response)");
-      }
+      console.log("Flight updated", flights.value[index]);
     } catch (err) {
       error.value = (err as Error).message;
     }
