@@ -9,6 +9,7 @@ export interface Flight {
   aircraft_id: string;
   totalSeats: number;
   seatMap: string[];
+  basePrice: number;
 }
 
 export type NewFlight = Omit<Flight, "_id" | "arrivalTime">;

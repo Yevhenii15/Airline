@@ -43,6 +43,13 @@
             placeholder="Aircraft ID"
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
+
+          <input
+            v-model="newFlight.basePrice"
+            type="number"
+            placeholder="Aircraft ID"
+            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+          />
         </div>
 
         <button
@@ -99,6 +106,12 @@
               placeholder="Aircraft ID"
               class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
             />
+            <input
+              v-model="editableFlight.basePrice"
+              type="number"
+              placeholder="Base Price"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
           </div>
 
           <div class="mt-4 flex space-x-2">
@@ -129,6 +142,9 @@
           <p class="text-gray-400 text-sm">🆔 ID: {{ flight._id }}</p>
           <p class="text-gray-400 text-sm">
             🛩️ Aircraft Type: {{ flight.aircraft_id }}
+          </p>
+          <p class="text-gray-400 text-sm">
+            💰 Base Price: {{ flight.basePrice }}
           </p>
 
           <div class="mt-4 flex space-x-2">
@@ -198,9 +214,10 @@ const newFlight = ref<NewFlight>({
     duration: "",
   },
   aircraft_id: "",
-  totalSeats: 150,
+  totalSeats: 192,
   seatMap: [],
   seats: [],
+  basePrice: 0,
 });
 
 const addFlightHandler = async () => {
@@ -223,9 +240,10 @@ const addFlightHandler = async () => {
       duration: "",
     },
     aircraft_id: "",
-    totalSeats: 150,
+    totalSeats: 192,
     seatMap: [],
     seats: [],
+    basePrice: 0,
   };
 };
 
