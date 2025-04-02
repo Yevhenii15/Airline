@@ -5,7 +5,7 @@
       <p class="hero-subtitle">Your journey begins here</p>
       <router-link to="/flights" class="btn-primary">Book a Flight</router-link>
     </header>
-    
+
     <div class="info-sections">
       <router-link to="/about" class="info-card">
         <h2>About Us</h2>

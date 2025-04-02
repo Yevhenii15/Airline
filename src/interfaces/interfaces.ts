@@ -55,3 +55,21 @@ export interface AboutCompany {
   phone: string;
   email: string;
 }
+export interface Ticket {
+  ticket_id: string;
+  firstName: string;
+  lastName: string;
+  ticketPrice: number;
+  gender: "Male" | "Female";
+  seatNumber: string;
+  flight_id: string;
+}
+
+export interface Booking {
+  user_id: string;
+  totalPrice: number;
+  bookingDate: string; // ISO format: "2024-03-09T12:00:00Z"
+  numberOfTickets: number;
+  bookingStatus: "Pending" | "Confirmed" | "Cancelled";
+  tickets: Ticket[];
+}
