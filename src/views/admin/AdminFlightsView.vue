@@ -32,24 +32,64 @@
           </select>
 
           <input
-            v-model="newFlight.departureTime"
-            type="datetime-local"
-            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
-          />
-
-          <input
-            v-model="newFlight.aircraft_id"
+            v-model="newFlight.departureDay"
             type="text"
-            placeholder="Aircraft ID"
+            placeholder="Departure Day (e.g., Monday)"
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
 
           <input
-            v-model="newFlight.basePrice"
-            type="number"
-            placeholder="Aircraft ID"
+            v-model="newFlight.departureTime"
+            type="text"
+            placeholder="Departure Time (e.g., 14:30)"
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
+
+          <div class="flex flex-col">
+            <label for="startDate" class="text-gray-400">Aircraft type</label>
+            <input
+              v-model="newFlight.aircraft_id"
+              type="text"
+              placeholder="Aircraft Type"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label for="startDate" class="text-gray-400">Base price</label>
+            <input
+              v-model="newFlight.basePrice"
+              type="number"
+              placeholder="Base Price"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
+          </div>
+
+          <!-- Add Operating Period -->
+          <div class="flex flex-col">
+            <label for="startDate" class="text-gray-400"
+              >Operating Period</label
+            >
+            <input
+              v-model="newFlight.operatingPeriod.startDate"
+              type="date"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
+            <input
+              v-model="newFlight.operatingPeriod.endDate"
+              type="date"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
+          </div>
+
+          <!-- Return Flight Option -->
+          <div class="flex items-center space-x-2">
+            <input
+              v-model="newFlight.isReturnFlightRequired"
+              type="checkbox"
+              class="text-white"
+            />
+            <span class="text-gray-400">Return Flight Required</span>
+          </div>
         </div>
 
         <button
@@ -95,8 +135,15 @@
             </select>
 
             <input
+              v-model="editableFlight.departureDay"
+              type="text"
+              placeholder="Departure Day (e.g., Monday)"
+              class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            />
+            <input
               v-model="editableFlight.departureTime"
-              type="datetime-local"
+              type="text"
+              placeholder="Departure Time (e.g., 14:30)"
               class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
             />
 
@@ -112,6 +159,23 @@
               placeholder="Base Price"
               class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
             />
+
+            <!-- Operating Period -->
+            <div class="flex flex-col">
+              <label for="startDate" class="text-gray-400"
+                >Operating Period</label
+              >
+              <input
+                v-model="editableFlight.operatingPeriod.startDate"
+                type="date"
+                class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+              />
+              <input
+                v-model="editableFlight.operatingPeriod.endDate"
+                type="date"
+                class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <div class="mt-4 flex space-x-2">
@@ -135,9 +199,11 @@
           <p class="text-lg font-semibold text-white">
             ✈️ {{ flight.flightNumber }} ({{ getRouteName(flight.route) }})
           </p>
+
+          <p class="text-gray-400 text-sm">📅 {{ flight.departureDay }}</p>
           <p class="text-gray-400 text-sm">
-            🕒 {{ formatDate(flight.departureTime) }} →
-            {{ formatDate(flight.arrivalTime) }}
+            🕒 {{ flight.departureTime }} →
+            {{ flight.arrivalTime }}
           </p>
           <p class="text-gray-400 text-sm">🆔 ID: {{ flight._id }}</p>
           <p class="text-gray-400 text-sm">
@@ -145,6 +211,25 @@
           </p>
           <p class="text-gray-400 text-sm">
             💰 Base Price: {{ flight.basePrice }}
+          </p>
+          <p class="text-gray-400 text-sm">
+            📅 Operating Period:
+            {{
+              flight.operatingPeriod && flight.operatingPeriod.startDate
+                ? formatDateOnly(flight.operatingPeriod.startDate)
+                : "N/A"
+            }}
+            to
+            {{
+              flight.operatingPeriod && flight.operatingPeriod.endDate
+                ? formatDateOnly(flight.operatingPeriod.endDate)
+                : "N/A"
+            }}
+          </p>
+
+          <p class="text-gray-400 text-sm">
+            🔄 Return Flight Required:
+            {{ flight.isReturnFlightRequired ? "Yes" : "No" }}
           </p>
 
           <div class="mt-4 flex space-x-2">
@@ -189,23 +274,10 @@ onMounted(() => {
   fetchFlights();
 });
 
-// Function to get the current date-time in local "YYYY-MM-DDTHH:MM" format
-const getCurrentDateTime = () => {
-  const now = new Date();
-  // Ensure the date-time is local
-  const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000); // Adjust to local time zone
-  return localTime.toISOString().slice(0, 16);
-};
-
-const formatDateForInput = (date: Date) => {
-  // Convert the date to local time before formatting for input
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return localDate.toISOString().slice(0, 16); // Trims the milliseconds and 'Z'
-};
-
 const newFlight = ref<NewFlight>({
   flightNumber: "",
-  departureTime: getCurrentDateTime(), // Use local time
+  departureDay: "",
+  departureTime: "", // Use local time
   status: "Scheduled",
   route: {
     _id: "",
@@ -218,6 +290,11 @@ const newFlight = ref<NewFlight>({
   seatMap: [],
   seats: [],
   basePrice: 0,
+  operatingPeriod: {
+    startDate: "",
+    endDate: "",
+  },
+  isReturnFlightRequired: false,
 });
 
 const addFlightHandler = async () => {
@@ -231,7 +308,8 @@ const addFlightHandler = async () => {
   // Reset form
   newFlight.value = {
     flightNumber: "",
-    departureTime: getCurrentDateTime(),
+    departureDay: "",
+    departureTime: "",
     status: "Scheduled",
     route: {
       _id: "",
@@ -244,6 +322,11 @@ const addFlightHandler = async () => {
     seatMap: [],
     seats: [],
     basePrice: 0,
+    operatingPeriod: {
+      startDate: "",
+      endDate: "",
+    },
+    isReturnFlightRequired: false,
   };
 };
 
@@ -252,7 +335,11 @@ const editableFlight = ref<Flight | null>(null);
 const updateFlightHandler = (flight: Flight) => {
   editableFlight.value = {
     ...flight,
-    departureTime: formatDateForInput(new Date(flight.departureTime)), // Convert format to local time
+    departureTime: flight.departureTime, // Keep time as a string
+    operatingPeriod: {
+      startDate: flight.operatingPeriod.startDate.slice(0, 10), // Extract YYYY-MM-DD format
+      endDate: flight.operatingPeriod.endDate.slice(0, 10),
+    },
   };
 };
 
@@ -268,19 +355,16 @@ const saveUpdatedFlight = async () => {
   await fetchFlights();
 };
 
+const cancelEdit = () => {
+  editableFlight.value = null; // Reset editable flight on cancel
+};
+
 const getRouteName = (route: any) => {
   if (!route || !route._id) return "Unknown Route";
   return `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
 };
-
-const formatDate = (dateString: string) => {
-  const localDate = new Date(dateString);
-  return localDate.toLocaleString(undefined, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const formatDateOnly = (dateString: string) => {
+  if (!dateString) return "";
+  return dateString.split("T")[0]; // Extract YYYY-MM-DD
 };
 </script>

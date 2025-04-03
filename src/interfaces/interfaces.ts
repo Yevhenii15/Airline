@@ -1,8 +1,13 @@
 export interface Flight {
   _id: string;
   flightNumber: string;
+  departureDay: string; // Added to match the request payload
   departureTime: string;
   arrivalTime: string;
+  operatingPeriod: {
+    startDate: string;
+    endDate: string;
+  };
   status: string;
   seats: Seat[];
   route: flightRoute;
@@ -10,6 +15,7 @@ export interface Flight {
   totalSeats: number;
   seatMap: string[];
   basePrice: number;
+  isReturnFlightRequired: boolean; // Added to match the request payload
 }
 
 export type NewFlight = Omit<Flight, "_id" | "arrivalTime">;

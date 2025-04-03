@@ -1,7 +1,8 @@
 import { ref } from "vue";
 import type { Flight, NewFlight } from "@/interfaces/interfaces";
 import { useUsers } from "./auth/useUsers";
-import { makeRequest } from "./functions/makeRequest"; // Added makeRequest import
+import { makeRequest } from "./functions/makeRequest"; // Unified request handling
+
 const { getTokenAndUserId } = useUsers();
 
 export const useFlights = () => {
@@ -12,20 +13,21 @@ export const useFlights = () => {
   const fetchFlights = async (): Promise<void> => {
     loading.value = true;
     try {
-      const data: Flight[] = await makeRequest("/flights", "GET"); // Replaced fetch with makeRequest
-      flights.value = data;
-      console.log("Flights fetched", flights.value);
+      const data: Flight[] = await makeRequest("/flights", "GET");
+      flights.value = data || []; // Ensure it's always an array
+      console.log("✅ Flights fetched", flights.value);
     } catch (err) {
       error.value = (err as Error).message;
+      flights.value = []; // Reset on error to avoid breaking Vue reactivity
     } finally {
       loading.value = false;
     }
   };
 
+  // Add a new flight
   const addFlight = async (flight: NewFlight): Promise<void> => {
     try {
       const { token, isAdmin } = getTokenAndUserId();
-
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
       const newFlight: Flight = await makeRequest(
@@ -33,16 +35,18 @@ export const useFlights = () => {
         "POST",
         flight,
         true
-      ); // Replaced fetch with makeRequest
+      );
       flights.value.push(newFlight);
-      console.log("New flight added", newFlight);
+      console.log("🛫 New flight added", newFlight);
 
-      await fetchFlights();
+      await fetchFlights(); // Refresh flights list
     } catch (err) {
-      console.error("Error in addFlight:", (err as Error).message);
+      console.error("❌ Error in addFlight:", (err as Error).message);
+      error.value = (err as Error).message;
     }
   };
 
+  // Delete a flight
   const deleteFlight = async (_id: string): Promise<void> => {
     try {
       if (!_id) {
@@ -53,9 +57,8 @@ export const useFlights = () => {
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true); // Replaced fetch with makeRequest
+      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true);
 
-      // Update frontend state after deletion
       flights.value = flights.value.filter((flight) => flight._id !== _id);
       console.log("✅ Flight deleted:", _id);
     } catch (err) {
@@ -64,13 +67,13 @@ export const useFlights = () => {
     }
   };
 
+  // Update a flight
   const updateFlight = async (
     id: string,
-    updatedFlight: Partial<Flight>
-  ): Promise<void> => {
+    updatedFlight: Partial<NewFlight>
+  ) => {
     try {
       const { token, isAdmin } = getTokenAndUserId();
-
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
       const updatedData: Flight = await makeRequest(
@@ -78,15 +81,16 @@ export const useFlights = () => {
         "PUT",
         updatedFlight,
         true
-      ); // Replaced fetch with makeRequest
+      );
 
-      // Find index of the updated flight and replace it while preserving `_id`
-      const index = flights.value.findIndex((flight) => flight._id === id);
-      if (index !== -1) {
-        flights.value[index] = { ...updatedData, _id: id };
-      }
-      console.log("Flight updated", flights.value[index]);
+      // Update flights reactively
+      flights.value = flights.value.map((flight) =>
+        flight._id === id ? { ...flight, ...updatedData } : flight
+      );
+
+      console.log("✈️ Flight updated", updatedData);
     } catch (err) {
+      console.error("❌ Error in updateFlight:", err);
       error.value = (err as Error).message;
     }
   };
