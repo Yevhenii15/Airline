@@ -33,6 +33,11 @@ const router = createRouter({
       },
     },
     {
+      path: "/seatmap",
+      name: "seatmap",
+      component: () => import("../components/SeatMap.vue"),
+    },
+    {
       path: "/auth",
       name: "auth",
       component: () => import("../views/admin/AuthView.vue"),

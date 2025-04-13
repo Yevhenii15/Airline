@@ -12,12 +12,19 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/vue": "^6.1.17",
     "@types/dotenv": "^6.1.1",
     "@types/jwt-decode": "^2.2.1",
     "dotenv": "^16.4.7",
     "jwt-decode": "^4.0.0",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-cal": "^4.10.2",
+    "vue-router": "^4.4.5",
+    "vue3-calendar": "^0.1.2",
+    "vue3-datepicker": "^0.4.0"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",

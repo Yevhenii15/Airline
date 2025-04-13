@@ -9,7 +9,7 @@
     }
   ],
   "compilerOptions": {
-    "types": ["vite/client"],
+    "types": ["vite/client", "./src/types/vue-cal"],
     "moduleResolution": "node",
     "allowJs": true,
     "noImplicitAny": false

@@ -101,7 +101,7 @@ export const useUsers = () => {
     state.isAdmin = userData.isAdmin;
 
     localStorage.setItem("lsToken", newToken);
-    localStorage.setItem("userIDToken", userData._id);
+    localStorage.setItem("userIDToken", userData.userId); // ✅
     localStorage.setItem("isAdmin", String(userData.isAdmin));
   };
 

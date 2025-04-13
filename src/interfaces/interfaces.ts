@@ -44,7 +44,7 @@ export interface Airport {
 }
 
 export type User = {
-  _id: string;
+  userId: string;
   name: string;
   email: string;
   phone: string;
@@ -62,13 +62,14 @@ export interface AboutCompany {
   email: string;
 }
 export interface Ticket {
-  ticket_id: string;
+  ticket_id?: string;
   firstName: string;
   lastName: string;
   ticketPrice: number;
-  gender: "Male" | "Female";
+  gender: string;
   seatNumber: string;
   flight_id: string;
+  departureDate: string;
 }
 
 export interface Booking {
