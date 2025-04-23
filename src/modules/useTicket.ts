@@ -63,29 +63,36 @@ export const useTickets = () => {
     return seats;
   });
 
-  const handleSeatSelect = (selectedSeat: string) => {
-    // Check if the number of selected seats exceeds the number of passengers
-    if (selectedSeats.value.length >= numberOfPassengers.value) {
-      alert(
-        `You can select only ${numberOfPassengers.value} seats for ${numberOfPassengers.value} passengers.`
-      );
-      return; // Prevent further selection
-    }
+  const handleSeatSelect = (seatId: string) => {
+    const index = selectedSeats.value.indexOf(seatId);
 
-    // Handle seat selection logic for all passengers
-    console.log("Selected seat:", selectedSeat);
+    // If already selected, deselect it
+    if (index !== -1) {
+      selectedSeats.value.splice(index, 1);
+      const ticket = tickets.value.find((t) => t.seatNumber === seatId);
+      if (ticket) ticket.seatNumber = "";
+    } else {
+      if (selectedSeats.value.length < numberOfPassengers.value) {
+        selectedSeats.value.push(seatId);
+      } else {
+        // Replace the last selected seat
+        const removedSeat = selectedSeats.value.pop();
+        selectedSeats.value.push(seatId);
 
-    // Add seat if not already selected
-    if (!selectedSeats.value.includes(selectedSeat)) {
-      selectedSeats.value.push(selectedSeat);
-    }
+        // Update ticket seat assignments
+        const removedTicket = tickets.value.find(
+          (t) => t.seatNumber === removedSeat
+        );
+        if (removedTicket) removedTicket.seatNumber = "";
 
-    // Update seat numbers for all tickets
-    tickets.value.forEach((ticket, index) => {
-      if (selectedSeats.value[index]) {
-        ticket.seatNumber = selectedSeats.value[index];
+        const emptyTicket = tickets.value.find((t) => !t.seatNumber);
+        if (emptyTicket) emptyTicket.seatNumber = seatId;
       }
-    });
+
+      // Assign to the first empty ticket
+      const emptyTicket = tickets.value.find((t) => !t.seatNumber);
+      if (emptyTicket) emptyTicket.seatNumber = seatId;
+    }
   };
 
   return {
