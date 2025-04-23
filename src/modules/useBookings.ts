@@ -45,14 +45,20 @@ export const useBookings = () => {
     const toDate = new Date(endDate);
     const validDates: Date[] = [];
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Remove time part to compare by date only
+
     while (fromDate <= toDate) {
-      if (
+      const isSameDay =
         fromDate.toLocaleDateString("en-US", { weekday: "long" }) ===
-        flight.departureDay
-      ) {
-        // Clone the date to avoid mutation
+        flight.departureDay;
+
+      const isFutureOrToday = fromDate >= today;
+
+      if (isSameDay && isFutureOrToday) {
         validDates.push(new Date(fromDate));
       }
+
       fromDate.setDate(fromDate.getDate() + 1);
     }
 

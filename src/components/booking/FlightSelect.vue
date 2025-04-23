@@ -67,16 +67,28 @@ const { flights, fetchFlights } = useFlights();
 const modelDepartureAirport = defineModel<string | null>("departureAirport");
 const modelArrivalAirport = defineModel<string | null>("arrivalAirport");
 const modelSelectedFlight = defineModel<string | null>("selectedFlight");
+const today = new Date();
+today.setHours(0, 0, 0, 0); // Normalize time
+
+const filteredFlights = computed(() => {
+  return flights.value.filter((flight) => {
+    const endDate = new Date(flight.operatingPeriod?.endDate);
+    endDate.setHours(0, 0, 0, 0);
+    return endDate >= today;
+  });
+});
 
 const uniqueDepartureAirports = computed(() => {
   return Array.from(
-    new Set(flights.value.map((flight) => flight.route.departureAirport_id))
+    new Set(
+      filteredFlights.value.map((flight) => flight.route.departureAirport_id)
+    )
   ) as string[];
 });
 
 const availableArrivalAirports = computed(() => {
   if (!modelDepartureAirport.value) return [];
-  const arrivalAirports = flights.value
+  const arrivalAirports = filteredFlights.value
     .filter(
       (flight) =>
         flight.route.departureAirport_id === modelDepartureAirport.value &&
@@ -87,11 +99,12 @@ const availableArrivalAirports = computed(() => {
 });
 
 const availableFlights = computed(() => {
-  return flights.value.filter(
+  return filteredFlights.value.filter(
     (flight) =>
       flight.route.departureAirport_id === modelDepartureAirport.value &&
       flight.route.arrivalAirport_id === modelArrivalAirport.value
   );
 });
+
 onMounted(() => fetchFlights());
 </script>
