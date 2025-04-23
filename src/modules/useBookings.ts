@@ -1,7 +1,7 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { makeRequest } from "./functions/makeRequest";
 import { useUsers } from "../modules/auth/useUsers"; // Correct import
-import type { Booking } from "./../interfaces/interfaces";
+import type { Booking, Flight } from "./../interfaces/interfaces";
 
 const { getTokenAndUserId } = useUsers(); // Correct function call
 
@@ -34,9 +34,57 @@ export const useBookings = () => {
     }
   };
 
+  const selectedFlightData = ref<Flight | null>(null);
+
+  const validFlightDates = computed(() => {
+    const flight = selectedFlightData.value;
+    if (!flight || !flight.operatingPeriod || !flight.departureDay) return [];
+
+    const { startDate, endDate } = flight.operatingPeriod;
+    const fromDate = new Date(startDate);
+    const toDate = new Date(endDate);
+    const validDates: Date[] = [];
+
+    while (fromDate <= toDate) {
+      if (
+        fromDate.toLocaleDateString("en-US", { weekday: "long" }) ===
+        flight.departureDay
+      ) {
+        // Clone the date to avoid mutation
+        validDates.push(new Date(fromDate));
+      }
+      fromDate.setDate(fromDate.getDate() + 1);
+    }
+
+    return validDates;
+  });
+
+  const disabledDates = computed(() => {
+    const validDates = validFlightDates.value;
+
+    return {
+      predicate: (currentDate: Date) =>
+        !validDates.some((validDate) => {
+          return (
+            currentDate.getFullYear() === validDate.getFullYear() &&
+            currentDate.getMonth() === validDate.getMonth() &&
+            currentDate.getDate() === validDate.getDate()
+          );
+        }),
+    };
+  });
+  const formatLocalDate = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+
   return {
     error,
     loading,
     createBooking,
+    selectedFlightData,
+    disabledDates,
+    formatLocalDate,
   };
 };
