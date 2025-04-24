@@ -18,6 +18,10 @@
             {{ formatDate(booking.bookingDate) }}
           </p>
           <p class="mb-2">
+            <span class="font-semibold text-gray-600">User email:</span>
+            {{ booking.user_email }}
+          </p>
+          <p class="mb-2">
             <span class="font-semibold text-gray-600">Status:</span>
             {{ booking.bookingStatus }}
           </p>
