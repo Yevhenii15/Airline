@@ -55,6 +55,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 import FlightSelect from "../components/booking/FlightSelect.vue";
 import SeatMap from "../components/booking/SeatMap.vue";
 import PassengerForm from "../components/booking/PassengerForm.vue";
@@ -180,7 +184,11 @@ const submitBooking = async () => {
     };
 
     await createBooking(bookingData);
-    alert("Booking successful!");
+
+    // Option 1: Pass via localStorage (preferred for larger data)
+    localStorage.setItem("latestBooking", JSON.stringify(bookingData));
+
+    router.push("/booking-confirmation");
   } catch (err) {
     alert("Booking failed. Please try again.");
   }

@@ -33,6 +33,11 @@ const router = createRouter({
       },
     },
     {
+      path: "/booking-confirmation",
+      name: "BookingConfirmation",
+      component: () => import("../views/BookingConfirmation.vue"),
+    },
+    {
       path: "/auth",
       name: "auth",
       component: () => import("../views/admin/AuthView.vue"),

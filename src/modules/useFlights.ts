@@ -23,6 +23,13 @@ export const useFlights = () => {
       loading.value = false;
     }
   };
+  const fetchFlightById = async (id: string): Promise<Flight> => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/flights/${id}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch flight");
+    return await res.json();
+  };
 
   // Add a new flight
   const addFlight = async (flight: NewFlight): Promise<void> => {
@@ -100,6 +107,7 @@ export const useFlights = () => {
     loading,
     flights,
     fetchFlights,
+    fetchFlightById,
     addFlight,
     deleteFlight,
     updateFlight,
