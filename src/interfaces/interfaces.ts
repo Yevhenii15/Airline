@@ -73,7 +73,9 @@ export interface Ticket {
 }
 
 export interface Booking {
+  _id?: string;
   user_id: string;
+  user_email: string; // Add the user_email property
   totalPrice: number;
   bookingDate: string; // ISO format: "2024-03-09T12:00:00Z"
   numberOfTickets: number;

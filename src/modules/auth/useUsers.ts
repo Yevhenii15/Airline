@@ -71,6 +71,7 @@ export const useUsers = () => {
   const getTokenAndUserId = (): {
     token: string;
     userId: string;
+    email: string; // Include email in the return type
     isAdmin: boolean;
   } => {
     const token = localStorage.getItem("lsToken") || "";
@@ -85,14 +86,19 @@ export const useUsers = () => {
       if (decodedToken.exp < Math.floor(Date.now() / 1000)) {
         throw new Error("Session expired, please log in again");
       }
+
+      // Return the email along with userId and other data
+      return {
+        token,
+        userId,
+        email: decodedToken.email, // Assuming email is stored in the token
+        isAdmin,
+      };
     } catch (err) {
       console.error("Invalid token:", err);
       throw new Error("Invalid token, please log in again");
     }
-
-    return { token, userId, isAdmin };
   };
-
   // 🌟 Helper: Update Authentication State
   const updateAuthState = (newToken: string, userData: User) => {
     token.value = newToken;

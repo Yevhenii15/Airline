@@ -2,7 +2,12 @@
   <div class="admin-container">
     <h1 class="title">Admin Panel</h1>
     <div class="admin-grid">
-      <router-link v-for="route in adminRoutes" :key="route.name" :to="route.path" class="admin-card">
+      <router-link
+        v-for="route in adminRoutes"
+        :key="route.name"
+        :to="route.path"
+        class="admin-card"
+      >
         <h2>{{ route.label }}</h2>
       </router-link>
     </div>
@@ -14,10 +19,27 @@ export default {
   data() {
     return {
       adminRoutes: [
-        { path: '/admin_routes', name: 'admin_routes', label: 'Manage Routes' },
-        { path: '/admin_airports', name: 'admin_airports', label: 'Manage Airports' },
-        { path: '/admin_flights', name: 'admin_flights', label: 'Manage Flights' },
-        { path: '/admin_aboutCompany', name: 'admin_aboutCompany', label: 'About Company' },
+        { path: "/admin_routes", name: "admin_routes", label: "Manage Routes" },
+        {
+          path: "/admin_airports",
+          name: "admin_airports",
+          label: "Manage Airports",
+        },
+        {
+          path: "/admin_flights",
+          name: "admin_flights",
+          label: "Manage Flights",
+        },
+        {
+          path: "/admin_bookings",
+          name: "admin_bookings",
+          label: "Manage Bookings",
+        },
+        {
+          path: "/admin_aboutCompany",
+          name: "admin_aboutCompany",
+          label: "About Company",
+        },
       ],
     };
   },

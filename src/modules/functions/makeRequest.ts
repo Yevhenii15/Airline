@@ -1,6 +1,6 @@
 export const makeRequest = async (
   endpoint: string,
-  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
   body?: object,
   authRequired: boolean = false
 ) => {

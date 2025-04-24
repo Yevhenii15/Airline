@@ -165,8 +165,11 @@ const submitBooking = async () => {
   }
 
   try {
+    const { userId, email } = getTokenAndUserId(); // Extract email along with userId
+
     const bookingData: Booking = {
-      user_id: userId.value || "",
+      user_id: userId || "", // Use userId
+      user_email: email || "", // Use email
       totalPrice: totalPrice.value,
       bookingDate: new Date().toISOString(),
       numberOfTickets: tickets.value.length,
