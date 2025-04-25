@@ -1,6 +1,12 @@
 <template>
   <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
     <h2 class="text-3xl font-bold text-blue-600 mb-6">Book a Flight</h2>
+    <div v-if="flightLoading" class="text-center text-blue-400 text-lg">
+      ⏳ Loading...
+    </div>
+    <div v-else-if="error" class="text-center text-red-500 font-semibold">
+      {{ error }}
+    </div>
 
     <FlightSelect
       v-model:departureAirport="departureAirport"
@@ -15,11 +21,14 @@
     />
 
     <!-- Number of Passengers -->
-    <label v-if="selectedFlight" class="block text-blue-600 font-medium">
+    <label
+      v-if="selectedFlight && selectedDate"
+      class="block text-blue-600 font-medium"
+    >
       Number of Passengers:
     </label>
     <input
-      v-if="selectedFlight"
+      v-if="selectedFlight && selectedDate"
       v-model.number="numberOfPassengers"
       type="number"
       min="1"
@@ -29,13 +38,16 @@
     />
 
     <SeatMap
-      v-if="selectedFlight"
+      v-if="selectedFlight && selectedDate && !loadingSeats"
       :seat-map="availableSeats"
       :selected-seats="selectedSeats"
       @select-seat="handleSeatSelect"
     />
+    <p v-if="loadingSeats" class="text-blue-500 font-medium mt-4">
+      Loading seats...
+    </p>
 
-    <PassengerForm v-if="selectedFlight" v-model="tickets" />
+    <PassengerForm v-if="selectedSeats.length > 0" v-model="tickets" />
 
     <h3 class="text-xl font-bold text-blue-600 mt-6">
       Total Price: ${{ totalPrice }}
@@ -80,7 +92,7 @@ const {
   formatLocalDate,
 } = useBookings();
 
-const { flights, fetchFlights } = useFlights();
+const { loading: flightLoading, flights, fetchFlights } = useFlights();
 const { getTokenAndUserId } = useUsers();
 const {
   getBookedSeats,
@@ -98,6 +110,7 @@ const departureAirport = ref<string | null>(null);
 const arrivalAirport = ref<string | null>(null);
 const selectedFlight = ref<string | null>(null);
 const selectedDate = ref<Date | undefined>(undefined);
+const loadingSeats = ref(false);
 
 // Set user ID on mount
 onMounted(() => {
@@ -125,11 +138,12 @@ watch(selectedFlight, (flightId) => {
   }
 });
 
-// Watch flight & date changes to update booked seats
 watch([selectedFlight, selectedDate], async ([flightId, date]) => {
   if (flightId && date instanceof Date) {
+    loadingSeats.value = true;
     const formattedDate = formatLocalDate(date);
     bookedSeats.value = await getBookedSeats(flightId, formattedDate);
+    loadingSeats.value = false;
     console.log("Booked seats for", formattedDate, ":", bookedSeats.value);
   }
 });

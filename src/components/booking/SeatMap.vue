@@ -1,5 +1,5 @@
 <template>
-  <div class="seat-map">
+  <div class="seat-map" v-if="props.seatMap.length">
     <div v-for="row in rows" :key="row" class="seat-row">
       <button
         v-for="seat in seats"
@@ -28,6 +28,7 @@
       </div>
     </div>
   </div>
+  <div v-else class="text-center mt-4">Loading seat map...</div>
 </template>
 
 <script setup lang="ts">
