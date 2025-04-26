@@ -147,7 +147,24 @@ export const useBookings = () => {
       throw new Error((err as Error).message);
     }
   };
-
+  const fetchBookingsByEmail = async (email: string): Promise<void> => {
+    loading.value = true;
+    try {
+      const data: Booking[] = await makeRequest(
+        `/bookings/user/email/${email}`,
+        "GET",
+        undefined,
+        true
+      );
+      bookings.value = data || [];
+      console.log(`📧 Bookings for email ${email} fetched`, bookings.value);
+    } catch (err) {
+      error.value = (err as Error).message;
+      bookings.value = [];
+    } finally {
+      loading.value = false;
+    }
+  };
   // Admin/User: Cancel booking
   const cancelBooking = async (id: string): Promise<void> => {
     try {
@@ -176,6 +193,7 @@ export const useBookings = () => {
     fetchAllBookings,
     fetchUserBookings,
     fetchBookingById,
+    fetchBookingsByEmail,
     cancelBooking,
   };
 };
