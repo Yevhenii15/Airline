@@ -38,102 +38,21 @@
         :key="booking._id"
         class="bg-white text-black shadow-lg rounded-xl p-6 flex flex-col"
       >
-        <!-- Booking Header -->
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <h2 class="text-l font-semibold">
-              🆔 Booking ID: {{ booking._id }}
-            </h2>
-            <p class="text-gray-600 text-sm">
-              👤 User ID: {{ booking.user_id }}
-            </p>
-            <p class="text-gray-600 text-sm">
-              📧 User Email: {{ booking.user_email }}
-            </p>
-          </div>
-          <button
-            @click="handleCancel(booking._id!)"
-            class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-md"
-          >
-            Cancel
-          </button>
-        </div>
+        <!-- 1. Header -->
+        <BookingHeader :booking="booking" @cancel="handleCancel" />
 
-        <!-- Booking Info -->
-        <div class="grid gap-2 text-sm text-gray-800">
-          <p>📅 Booking Date: {{ formatDate(booking.bookingDate) }}</p>
-          <p>💰 Total Price: €{{ booking.totalPrice.toFixed(2) }}</p>
-          <p>🎟️ Tickets: {{ booking.numberOfTickets }}</p>
-          <p>
-            📌 Status:
-            <span
-              :class="{
-                'text-green-600': booking.bookingStatus === 'Confirmed',
-                'text-yellow-600': booking.bookingStatus === 'Pending',
-                'text-red-600': booking.bookingStatus === 'Cancelled',
-              }"
-            >
-              {{ booking.bookingStatus }}
-            </span>
-          </p>
-        </div>
+        <!-- 2. Info -->
+        <BookingInfo :booking="booking" :formatDate="formatDate" />
 
-        <!-- Flight Details -->
-        <div
-          v-if="booking.tickets?.length"
-          class="mt-4 bg-blue-50 p-4 rounded-md shadow-md"
-        >
-          <h4 class="font-semibold text-blue-700 mb-2">✈️ Flight Details:</h4>
-          <p>
-            <strong>Flight Number:</strong>
-            {{ flightsById[booking.tickets[0].flight_id]?.flightNumber }}
-          </p>
-          <p>
-            <strong>Departure Airport:</strong>
-            {{
-              flightsById[booking.tickets[0].flight_id]?.route
-                .departureAirport_id
-            }}
-          </p>
-          <p>
-            <strong>Arrival Airport:</strong>
-            {{
-              flightsById[booking.tickets[0].flight_id]?.route.arrivalAirport_id
-            }}
-          </p>
-          <p>
-            <strong>Departure Date:</strong>
-            {{ formatDate(booking.tickets[0].departureDate) }}
-          </p>
-          <p>
-            <strong>Departure Time:</strong>
-            {{ flightsById[booking.tickets[0].flight_id]?.departureTime }}
-          </p>
-          <p>
-            <strong>Arrival Time:</strong>
-            {{ flightsById[booking.tickets[0].flight_id]?.arrivalTime }}
-          </p>
-          <p>
-            <strong>Status:</strong>
-            {{ flightsById[booking.tickets[0].flight_id]?.status }}
-          </p>
-        </div>
+        <!-- 3. Flight Details -->
+        <FlightDetails
+          :ticket="booking.tickets[0]"
+          :flight="flightsById[booking.tickets[0].flight_id]"
+          :formatDate="formatDate"
+        />
 
-        <!-- Tickets List -->
-        <div v-if="booking.tickets?.length" class="mt-4">
-          <h3 class="text-md font-medium mb-2">🧾 Tickets:</h3>
-          <div
-            v-for="ticket in booking.tickets"
-            :key="ticket.ticket_id"
-            class="bg-gray-100 p-3 rounded-md mb-2"
-          >
-            <p>👤 Name: {{ ticket.firstName }} {{ ticket.lastName }}</p>
-            <p>🪑 Seat: {{ ticket.seatNumber }}</p>
-            <p>🚹 Gender: {{ ticket.gender }}</p>
-            <p>🎫 Price: €{{ ticket.ticketPrice }}</p>
-            <p>✈️ Flight ID: {{ ticket.flight_id }}</p>
-          </div>
-        </div>
+        <!-- 4. Ticket List -->
+        <TicketList :tickets="booking.tickets" />
       </div>
     </div>
   </div>
@@ -143,7 +62,13 @@
 import { onMounted, ref } from "vue";
 import { useBookings } from "../../modules/useBookings";
 import { useFlights } from "../../modules/useFlights";
-import type { Booking } from "../../interfaces/interfaces";
+import type { Booking } from "@/interfaces/interfaces";
+
+// Reusable components
+import BookingHeader from "@/components/booking/details/BookingHeader.vue";
+import BookingInfo from "@/components/booking/details/BookingInfo.vue";
+import FlightDetails from "@/components/booking/details/FlightDetails.vue";
+import TicketList from "@/components/booking/details/TicketList.vue";
 
 const {
   bookings,
@@ -154,13 +79,14 @@ const {
   fetchBookingsByEmail,
   fetchBookingById,
 } = useBookings();
+
 const { fetchFlightById } = useFlights();
 
 const flightsById = ref<Record<string, any>>({});
 const searchTerm = ref<string>("");
 const searchError = ref<string>("");
 
-// on mount, load everything
+// On mount, load everything
 onMounted(async () => {
   await loadAll();
 });
@@ -170,7 +96,7 @@ async function loadAll() {
   await loadFlightsFor(bookings.value);
 }
 
-// helper to load flight details for a list
+// Helper to load flight details for a list
 async function loadFlightsFor(list: Booking[]) {
   const ids = [
     ...new Set(list.flatMap((b) => b.tickets.map((t) => t.flight_id))),
@@ -186,15 +112,16 @@ async function loadFlightsFor(list: Booking[]) {
   }
 }
 
-// search by email or id
+// Search by email or ID
 async function search() {
   if (!searchTerm.value.trim()) {
     searchError.value = "Please enter an email or booking ID.";
     return;
   }
   searchError.value = "";
-  // email?
+
   if (searchTerm.value.includes("@")) {
+    // Email search
     try {
       await fetchBookingsByEmail(searchTerm.value);
       if (bookings.value.length === 0) {
@@ -206,18 +133,18 @@ async function search() {
       searchError.value = (err as Error).message;
     }
   } else {
-    // treat as booking ID
+    // Booking ID search
     try {
       const single = await fetchBookingById(searchTerm.value);
       bookings.value = [single];
       await loadFlightsFor(bookings.value);
-    } catch (err) {
+    } catch {
       searchError.value = "No booking found with that ID.";
     }
   }
 }
 
-// reset to full list
+// Reset to full list
 async function reset() {
   searchTerm.value = "";
   searchError.value = "";
@@ -225,12 +152,14 @@ async function reset() {
   await loadAll();
 }
 
+// Handle cancel
 async function handleCancel(id: string) {
   if (confirm("Are you sure you want to cancel this booking?")) {
     await cancelBooking(id);
   }
 }
 
+// Date formatter
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("en-GB", {

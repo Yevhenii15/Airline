@@ -9,8 +9,15 @@
           <RouterLink to="/about" class="nav-item">About</RouterLink>
           <RouterLink to="/flights" class="nav-item">Flights</RouterLink>
           <RouterLink to="/auth" class="nav-item">Auth</RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin" class="nav-item">Admin Panel</RouterLink>
-          <button v-if="isLoggedin" @click="logout" class="nav-button">LogOut</button>
+          <RouterLink v-if="isLoggedin" to="/profile" class="nav-item"
+            >Profile</RouterLink
+          >
+          <RouterLink v-if="isAdmin" to="/admin" class="nav-item"
+            >Admin Panel</RouterLink
+          >
+          <button v-if="isLoggedin" @click="logout" class="nav-button">
+            LogOut
+          </button>
         </nav>
       </div>
     </header>
@@ -27,12 +34,9 @@ import { computed } from "vue";
 import { useUsers } from "@/modules/auth/useUsers";
 import { state } from "@/modules/globalStates/state";
 
-
 const { logout } = useUsers();
 const isLoggedin = computed(() => state.isLoggedIn);
 const isAdmin = computed(() => state.isAdmin);
-
-
 </script>
 
 <style scoped>

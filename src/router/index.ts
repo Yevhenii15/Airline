@@ -38,6 +38,14 @@ const router = createRouter({
       component: () => import("../views/BookingConfirmation.vue"),
     },
     {
+      path: "/profile",
+      name: "profile",
+      component: () => import("../views/ProfileView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/auth",
       name: "auth",
       component: () => import("../views/admin/AuthView.vue"),
