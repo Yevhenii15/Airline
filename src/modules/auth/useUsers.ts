@@ -15,6 +15,17 @@ export const useUsers = () => {
   const password = ref<string>("");
   const dateOfBirth = ref<Date>(new Date());
 
+  // 🌟 Fetch current user profile
+  const fetchUserProfile = async (): Promise<void> => {
+    try {
+      const { userId, token } = getTokenAndUserId();
+      const resp = await makeRequest(`/user/${userId}`, "GET", undefined, true);
+      user.value = resp.data as User;
+    } catch (err) {
+      error.value = (err as Error).message;
+    }
+  };
+
   // 🌟 Fetch Token (Login)
   const fetchToken = async (email: string, password: string): Promise<void> => {
     try {
@@ -58,6 +69,43 @@ export const useUsers = () => {
       console.log("User registered successfully:", authResponse);
     } catch (err) {
       error.value = (err as Error).message;
+    }
+  };
+  // 🌟 Update User Profile
+  const updateUserProfile = async (data: {
+    name: string;
+    phone: string;
+    email: string;
+  }): Promise<void> => {
+    try {
+      const { userId } = getTokenAndUserId();
+      await makeRequest(`/user/${userId}`, "PUT", data, true);
+    } catch (err) {
+      error.value = (err as Error).message;
+      throw err;
+    }
+  };
+
+  // 🌟 Change User Password
+  const changeUserPassword = async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> => {
+    try {
+      const { userId } = getTokenAndUserId();
+      const resp = await makeRequest(
+        `/user/${userId}/password`,
+        "PATCH",
+        {
+          currentPassword,
+          newPassword,
+        },
+        true
+      );
+      console.log("Password changed successfully:", resp.data);
+    } catch (err) {
+      error.value = (err as Error).message;
+      throw err;
     }
   };
 
@@ -133,8 +181,11 @@ export const useUsers = () => {
     phone,
     password,
     dateOfBirth,
+    fetchUserProfile,
     fetchToken,
     registerUser,
+    updateUserProfile,
+    changeUserPassword,
     logout,
     getTokenAndUserId,
   };

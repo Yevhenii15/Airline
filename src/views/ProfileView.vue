@@ -7,14 +7,42 @@
     <div v-if="error" class="text-red-600 mb-4">{{ error }}</div>
 
     <!-- No bookings -->
-    <div v-if="!loading && bookings.length === 0" class="text-gray-700">
+    <div v-if="!loading && bookings.length === 0" class="text-white mb-4">
       You have not made any bookings yet.
+    </div>
+    <UserDetails v-if="user" :user="user" />
+
+    <!-- Tabs -->
+    <div v-if="bookings.length" class="flex space-x-4 mb-6">
+      <button
+        @click="activeTab = 'upcoming'"
+        :class="
+          activeTab === 'upcoming'
+            ? 'border-b-2 border-blue-600 text-gray-400 font-semibold'
+            : 'text-white hover:text-gray-200'
+        "
+      >
+        Upcoming ({{ upcomingBookings.length }})
+      </button>
+      <button
+        @click="activeTab = 'past'"
+        :class="
+          activeTab === 'past'
+            ? 'border-b-2 border-blue-600 text-gray-400 font-semibold'
+            : 'text-white hover:text-gray-200'
+        "
+      >
+        Past ({{ pastBookings.length }})
+      </button>
     </div>
 
     <!-- Booking Cards Grid -->
-    <div v-if="bookings.length" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div
+      v-if="filteredBookings.length"
+      class="grid grid-cols-1 sm:grid-cols-2 gap-6"
+    >
       <div
-        v-for="booking in bookings"
+        v-for="booking in filteredBookings"
         :key="booking._id"
         class="bg-white shadow-md rounded-xl p-6 flex flex-col"
       >
@@ -35,14 +63,24 @@
         <TicketList :tickets="booking.tickets" />
       </div>
     </div>
+
+    <!-- No items in selected tab -->
+    <div
+      v-if="!loading && bookings.length && filteredBookings.length === 0"
+      class="text-white"
+    >
+      No {{ activeTab }} bookings.
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useBookings } from "../modules/useBookings";
 import { useFlights } from "../modules/useFlights";
+import { useUsers } from "../modules/auth/useUsers";
 
+import UserDetails from "@/components/user/UserDetails.vue";
 import BookingHeader from "@/components/booking/details/BookingHeader.vue";
 import BookingInfo from "@/components/booking/details/BookingInfo.vue";
 import FlightDetails from "@/components/booking/details/FlightDetails.vue";
@@ -52,12 +90,15 @@ import type { Booking, Flight } from "@/interfaces/interfaces";
 
 const { bookings, loading, error, fetchUserBookings, cancelBooking } =
   useBookings();
-
 const { fetchFlightById } = useFlights();
+const { user, fetchUserProfile } = useUsers();
+
 const flightsById = ref<Record<string, Flight>>({});
+const activeTab = ref<"upcoming" | "past">("upcoming");
 
 // Load user bookings and flights on mount
 onMounted(async () => {
+  await fetchUserProfile();
   await fetchUserBookings();
   await loadFlights();
 });
@@ -78,6 +119,20 @@ async function loadFlights() {
     }
   }
 }
+
+// Split upcoming vs past based on first ticket departure date
+const today = new Date();
+const upcomingBookings = computed(() =>
+  bookings.value.filter((b) => new Date(b.tickets[0].departureDate) >= today)
+);
+const pastBookings = computed(() =>
+  bookings.value.filter((b) => new Date(b.tickets[0].departureDate) < today)
+);
+
+// Which to show
+const filteredBookings = computed(() =>
+  activeTab.value === "upcoming" ? upcomingBookings.value : pastBookings.value
+);
 
 // Helper to look up a flight
 function flightFor(flightId: string): Flight | undefined {
