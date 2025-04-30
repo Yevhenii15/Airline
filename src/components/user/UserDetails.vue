@@ -71,7 +71,7 @@ const props = defineProps<{ user: User }>();
 const user = ref<User>({ ...props.user }); // ✅ make user reactive from props
 
 // Composable
-const { updateUserProfile, changeUserPassword, fetchUserProfile } = useUsers();
+const { updateUserProfile, changeUserPassword } = useUsers();
 
 // Inputs for update (using local user ref)
 const name = ref(user.value.name);

@@ -28,8 +28,8 @@
     <div v-if="searchError" class="text-red-600 mb-4">{{ searchError }}</div>
 
     <!-- Display Loading / Global Error -->
-    <div v-if="loading" class="text-blue-500 mb-4">Loading...</div>
-    <div v-if="error" class="text-red-600 mb-4">{{ error }}</div>
+    <div v-if="bookingLoading" class="text-blue-500 mb-4">Loading...</div>
+    <div v-if="bookingError" class="text-red-600 mb-4">{{ bookingError }}</div>
 
     <!-- Booking Cards Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -39,12 +39,23 @@
         class="bg-white text-black shadow-lg rounded-xl p-6 flex flex-col"
       >
         <!-- 1. Header -->
-        <BookingHeader :booking="booking" @cancel="handleCancel" />
+        <BookingHeader
+          :booking="booking"
+          :showId="true"
+          :showCancelButton="true"
+          @cancel="handleCancel"
+        />
 
         <!-- 2. Info -->
         <BookingInfo :booking="booking" :formatDate="formatDate" />
 
         <!-- 3. Flight Details -->
+        <div v-if="flightLoading" class="text-blue-500 mb-4">
+          Loading flight details...
+        </div>
+        <div v-if="flightError" class="text-red-600 mb-4">
+          {{ flightError }}
+        </div>
         <FlightDetails
           :ticket="booking.tickets[0]"
           :flight="flightsById[booking.tickets[0].flight_id]"
@@ -72,15 +83,19 @@ import TicketList from "@/components/booking/details/TicketList.vue";
 
 const {
   bookings,
-  error,
-  loading,
+  error: bookingError,
+  loading: bookingLoading,
   fetchAllBookings,
   cancelBooking,
   fetchBookingsByEmail,
   fetchBookingById,
 } = useBookings();
 
-const { fetchFlightById } = useFlights();
+const {
+  fetchFlightById,
+  error: flightError,
+  loading: flightLoading,
+} = useFlights();
 
 const flightsById = ref<Record<string, any>>({});
 const searchTerm = ref<string>("");

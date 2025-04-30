@@ -2,11 +2,17 @@
   <div class="bg-[#181818] min-h-screen p-6 text-white">
     <h1 class="text-3xl font-bold text-center mb-8">✈️ Admin View - Flights</h1>
 
-    <div v-if="loading" class="text-center text-blue-400 text-lg">
+    <div
+      v-if="flightLoading && routeLoading"
+      class="text-center text-blue-400 text-lg"
+    >
       ⏳ Loading...
     </div>
-    <div v-else-if="error" class="text-center text-red-500 font-semibold">
-      {{ error }}
+    <div
+      v-else-if="flightError || routeError"
+      class="text-center text-red-500 font-semibold"
+    >
+      {{ flightError || routeError }}
     </div>
 
     <!-- Add New Flight -->
@@ -260,14 +266,19 @@ import type { Flight, NewFlight } from "../../interfaces/interfaces";
 
 const {
   flights,
-  error,
-  loading,
+  error: flightError,
+  loading: flightLoading,
   fetchFlights,
   deleteFlight,
   addFlight,
   updateFlight,
 } = useFlights();
-const { routes, fetchRoutes } = useFlightRoutes();
+const {
+  routes,
+  fetchRoutes,
+  error: routeError,
+  loading: routeLoading,
+} = useFlightRoutes();
 
 onMounted(() => {
   fetchRoutes();

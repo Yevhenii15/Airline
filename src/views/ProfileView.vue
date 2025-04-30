@@ -3,13 +3,14 @@
     <h1 class="text-2xl text-white font-bold mb-6">👤 My Bookings</h1>
 
     <!-- Loading & Error -->
-    <div v-if="loading" class="text-blue-500 mb-4">Loading your bookings…</div>
-    <div v-if="error" class="text-red-600 mb-4">{{ error }}</div>
-
-    <!-- No bookings -->
-    <div v-if="!loading && bookings.length === 0" class="text-white mb-4">
-      You have not made any bookings yet.
+    <div v-if="userLoading" class="text-blue-500 mb-4">
+      Loading your profile...
     </div>
+
+    <div v-if="userError && bookingError" class="text-red-600 mb-4">
+      {{ userError || bookingError }}
+    </div>
+
     <UserDetails v-if="user" :user="user" />
 
     <!-- Tabs -->
@@ -35,7 +36,10 @@
         Past ({{ pastBookings.length }})
       </button>
     </div>
-
+    <!-- Loading & Error -->
+    <div v-if="bookingLoading" class="text-blue-500 mb-4">
+      Loading your booking...
+    </div>
     <!-- Booking Cards Grid -->
     <div
       v-if="filteredBookings.length"
@@ -47,12 +51,23 @@
         class="bg-white shadow-md rounded-xl p-6 flex flex-col"
       >
         <!-- Header -->
-        <BookingHeader :booking="booking" @cancel="cancel" />
+        <BookingHeader
+          :booking="booking"
+          :showId="true"
+          :showCancelButton="true"
+          @cancel="cancel"
+        />
 
         <!-- Booking Info -->
         <BookingInfo :booking="booking" :formatDate="formatDate" />
 
         <!-- Flight Details for first ticket -->
+        <div v-if="flightLoading" class="text-blue-500 mb-4">
+          Loading flight details...
+        </div>
+        <div v-if="flightError" class="text-red-600 mb-4">
+          {{ flightError }}
+        </div>
         <FlightDetails
           :ticket="booking.tickets[0]"
           :flight="flightFor(booking.tickets[0].flight_id)"
@@ -66,7 +81,7 @@
 
     <!-- No items in selected tab -->
     <div
-      v-if="!loading && bookings.length && filteredBookings.length === 0"
+      v-if="!bookingLoading && bookings.length && filteredBookings.length === 0"
       class="text-white"
     >
       No {{ activeTab }} bookings.
@@ -86,12 +101,26 @@ import BookingInfo from "@/components/booking/details/BookingInfo.vue";
 import FlightDetails from "@/components/booking/details/FlightDetails.vue";
 import TicketList from "@/components/booking/details/TicketList.vue";
 
-import type { Booking, Flight } from "@/interfaces/interfaces";
+import type { Flight } from "@/interfaces/interfaces";
 
-const { bookings, loading, error, fetchUserBookings, cancelBooking } =
-  useBookings();
-const { fetchFlightById } = useFlights();
-const { user, fetchUserProfile } = useUsers();
+const {
+  bookings,
+  loading: bookingLoading,
+  error: bookingError,
+  fetchUserBookings,
+  cancelBooking,
+} = useBookings();
+const {
+  fetchFlightById,
+  loading: flightLoading,
+  error: flightError,
+} = useFlights();
+const {
+  user,
+  fetchUserProfile,
+  loading: userLoading,
+  error: userError,
+} = useUsers();
 
 const flightsById = ref<Record<string, Flight>>({});
 const activeTab = ref<"upcoming" | "past">("upcoming");

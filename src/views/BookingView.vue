@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
     <h2 class="text-3xl font-bold text-blue-600 mb-6">Book a Flight</h2>
-    <div v-if="flightLoading" class="text-center text-blue-400 text-lg">
+    <div
+      v-if="flightLoading && bookingLoading"
+      class="text-center text-blue-400 text-lg"
+    >
       ⏳ Loading...
     </div>
     <div v-else-if="error" class="text-center text-red-500 font-semibold">
@@ -55,10 +58,10 @@
 
     <button
       @click="submitBooking"
-      :disabled="loading"
+      :disabled="bookingLoading"
       class="mt-6 bg-green-600 text-white px-8 py-3 rounded-lg"
     >
-      {{ loading ? "Processing..." : "Confirm Booking" }}
+      {{ bookingLoading ? "Processing..." : "Confirm Booking" }}
     </button>
 
     <p v-if="error" class="text-red-500 mt-4">{{ error }}</p>
@@ -85,7 +88,7 @@ import type { Booking } from "../interfaces/interfaces";
 // Composables
 const {
   createBooking,
-  loading,
+  loading: bookingLoading,
   error,
   selectedFlightData,
   disabledDates,

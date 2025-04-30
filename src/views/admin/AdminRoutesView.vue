@@ -4,14 +4,17 @@
       ✈️ Admin View - Flight Routes
     </h1>
     <div
-      v-if="loadingRoutes || loadingAirports"
+      v-if="loadingRoutes && loadingAirports"
       class="text-center text-blue-400 text-lg"
     >
       ⏳ Loading...
     </div>
 
-    <div v-else-if="error" class="text-center text-red-500 font-semibold">
-      {{ error }}
+    <div
+      v-else-if="routesError || airportError"
+      class="text-center text-red-500 font-semibold"
+    >
+      {{ routesError || airportError }}
     </div>
 
     <!-- Add new route section -->
@@ -148,7 +151,7 @@ import type { flightRoute } from "../../interfaces/interfaces";
 
 const {
   routes,
-  error,
+  error: routesError,
   loading: loadingRoutes, // Rename to avoid conflicts
   fetchRoutes,
   deleteRoute,
@@ -156,7 +159,12 @@ const {
   updateRoute,
 } = useFlightRoutes();
 
-const { airports, fetchAirports, loading: loadingAirports } = useAirports(); // Add loadingAirports
+const {
+  airports,
+  fetchAirports,
+  loading: loadingAirports,
+  error: airportError,
+} = useAirports(); // Add loadingAirports
 
 onMounted(() => {
   fetchAirports();

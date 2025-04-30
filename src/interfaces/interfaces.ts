@@ -1,7 +1,7 @@
 export interface Flight {
   _id: string;
   flightNumber: string;
-  departureDay: string; // Added to match the request payload
+  departureDay: string;
   departureTime: string;
   arrivalTime: string;
   operatingPeriod: {
@@ -15,7 +15,7 @@ export interface Flight {
   totalSeats: number;
   seatMap: string[];
   basePrice: number;
-  isReturnFlightRequired: boolean; // Added to match the request payload
+  isReturnFlightRequired: boolean;
 }
 
 export type NewFlight = Omit<Flight, "_id" | "arrivalTime">;
@@ -75,9 +75,9 @@ export interface Ticket {
 export interface Booking {
   _id?: string;
   user_id: string;
-  user_email: string; // Add the user_email property
+  user_email: string;
   totalPrice: number;
-  bookingDate: string; // ISO format: "2024-03-09T12:00:00Z"
+  bookingDate: string;
   numberOfTickets: number;
   bookingStatus: "Pending" | "Confirmed" | "Cancelled";
   tickets: Ticket[];

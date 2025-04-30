@@ -7,6 +7,7 @@ import { makeRequest } from "../functions/makeRequest"; // ✅ Import reusable r
 export const useUsers = () => {
   const token = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const loading = ref<boolean>(false);
   const user = ref<User | null>(null);
 
   const name = ref<string>("");
@@ -18,11 +19,14 @@ export const useUsers = () => {
   // 🌟 Fetch current user profile
   const fetchUserProfile = async (): Promise<void> => {
     try {
+      loading.value = true;
       const { userId, token } = getTokenAndUserId();
       const resp = await makeRequest(`/user/${userId}`, "GET", undefined, true);
       user.value = resp.data as User;
     } catch (err) {
       error.value = (err as Error).message;
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -175,6 +179,7 @@ export const useUsers = () => {
     isLoggedIn: state.isLoggedIn,
     isAdmin: state.isAdmin,
     error,
+    loading,
     user,
     name,
     email,
