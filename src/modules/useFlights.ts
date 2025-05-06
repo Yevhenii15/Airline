@@ -76,8 +76,10 @@ export const useFlights = () => {
       await makeRequest(`/flights/${_id}`, "DELETE", undefined, true);
 
       flights.value = flights.value.filter((flight) => flight._id !== _id);
+      alert("Flight deleted successfully");
       console.log("✅ Flight deleted:", _id);
     } catch (err) {
+      alert("Failed to delete flight");
       console.error("❌ Error in deleteFlight:", err);
       error.value = (err as Error).message;
     }
