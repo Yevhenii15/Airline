@@ -11,7 +11,7 @@
       {{ userError || bookingError }}
     </div>
 
-    <UserDetails v-if="user" :user="user" />
+    <UserDetails v-if="user" v-model="user" />
 
     <!-- Tabs -->
     <div v-if="bookings.length" class="flex space-x-4 mb-6">

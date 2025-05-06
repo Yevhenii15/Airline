@@ -52,46 +52,41 @@
     </form>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import type {
-  NewFlightRoute,
-  flightRoute,
-  Airport,
-} from "../../interfaces/interfaces";
+import type { NewFlightRoute, Airport } from "../../interfaces/interfaces";
 
+// Props & Emits for v-model
 const props = defineProps<{
-  initial?: NewFlightRoute;
   airports: Airport[];
   durations: string[];
+  modelValue: NewFlightRoute; // We bind modelValue for two-way binding
 }>();
 
 const emit = defineEmits<{
+  (e: "update:modelValue", payload: NewFlightRoute): void; // Emits changes to the parent
   (e: "submit", payload: NewFlightRoute): void;
 }>();
 
-const form = ref<NewFlightRoute>(
-  props.initial
-    ? { ...props.initial }
-    : { departureAirport_id: "", arrivalAirport_id: "", duration: "" }
-);
+const form = ref<NewFlightRoute>({ ...props.modelValue }); // Initialize form with modelValue
 
+// Watch for changes in modelValue (this will sync form with the parent)
 watch(
-  () => props.initial,
-  (val) => {
-    if (val) form.value = { ...val };
+  () => props.modelValue,
+  (newVal) => {
+    form.value = { ...newVal };
   }
 );
 
 const onSubmit = () => {
   emit("submit", { ...form.value });
-  if (!props.initial) {
-    form.value = {
-      departureAirport_id: "",
-      arrivalAirport_id: "",
-      duration: "",
-    };
-  }
+  emit("update:modelValue", { ...form.value }); // Emit updated value to parent
+
+  // Reset form after submission
+  form.value = {
+    departureAirport_id: "",
+    arrivalAirport_id: "",
+    duration: "",
+  }; // Reset to empty or default values
 };
 </script>

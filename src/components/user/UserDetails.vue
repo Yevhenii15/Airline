@@ -19,9 +19,24 @@
         @submit.prevent="handleUpdateProfile"
         class="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
-        <input v-model="name" type="text" placeholder="Name" class="input" />
-        <input v-model="phone" type="text" placeholder="Phone" class="input" />
-        <input v-model="email" type="email" placeholder="Email" class="input" />
+        <input
+          v-model="user.name"
+          type="text"
+          placeholder="Name"
+          class="input"
+        />
+        <input
+          v-model="user.phone"
+          type="text"
+          placeholder="Phone"
+          class="input"
+        />
+        <input
+          v-model="user.email"
+          type="email"
+          placeholder="Email"
+          class="input"
+        />
         <button type="submit" class="btn col-span-1 sm:col-span-2">
           Update Profile
         </button>
@@ -65,24 +80,19 @@ import { computed, ref } from "vue";
 import type { User } from "@/interfaces/interfaces";
 import { useUsers } from "@/modules/auth/useUsers";
 
-const props = defineProps<{ user: User }>();
+// Props for v-model
+const props = defineProps<{ modelValue: User }>();
+const emit = defineEmits<{ (e: "update:modelValue", user: User): void }>();
 
-// Create local reactive user
-const user = ref<User>({ ...props.user }); // ✅ make user reactive from props
+const user = ref<User>({ ...props.modelValue });
 
-// Composable
 const { updateUserProfile, changeUserPassword } = useUsers();
-
-// Inputs for update (using local user ref)
-const name = ref(user.value.name);
-const phone = ref(user.value.phone);
-const email = ref(user.value.email);
 
 // Inputs for password change
 const currentPassword = ref("");
 const newPassword = ref("");
 
-// Feedback
+// Feedback messages
 const successMessage = ref("");
 const errorMessage = ref("");
 
@@ -102,22 +112,16 @@ const formattedDOB = computed(() => {
 const handleUpdateProfile = async () => {
   try {
     await updateUserProfile({
-      name: name.value,
-      phone: phone.value,
-      email: email.value,
+      name: user.value.name,
+      phone: user.value.phone,
+      email: user.value.email,
     });
 
     successMessage.value = "Profile updated successfully!";
     errorMessage.value = "";
 
-    // Update local user reactivity
-    user.value.name = name.value;
-    user.value.phone = phone.value;
-    user.value.email = email.value;
-
-    // Optionally re-fetch full profile if needed
-    // const freshUser = await fetchUserProfile();
-    // user.value = freshUser;
+    // Emit changes to parent
+    emit("update:modelValue", user.value);
   } catch (err) {
     successMessage.value = "";
     errorMessage.value = (err as Error).message;
@@ -128,15 +132,12 @@ const handleChangePassword = async () => {
   try {
     await changeUserPassword(currentPassword.value, newPassword.value);
 
-    // Only if it succeeds
     successMessage.value = "Password changed successfully!";
     errorMessage.value = "";
 
-    // Clear password fields
     currentPassword.value = "";
     newPassword.value = "";
   } catch (err) {
-    // Only if it fails
     successMessage.value = "";
     errorMessage.value = (err as Error).message;
   }

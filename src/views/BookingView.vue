@@ -2,7 +2,7 @@
   <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
     <h2 class="text-3xl font-bold text-blue-600 mb-6">Book a Flight</h2>
     <div
-      v-if="flightLoading && bookingLoading"
+      v-if="flightLoading || bookingLoading"
       class="text-center text-blue-400 text-lg"
     >
       ⏳ Loading...

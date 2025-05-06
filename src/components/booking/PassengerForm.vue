@@ -1,6 +1,6 @@
 <template>
   <div
-    v-for="(ticket, index) in modelValue"
+    v-for="(ticket, index) in model!"
     :key="index"
     class="bg-gray-100 p-6 rounded-lg mt-4"
   >
@@ -39,13 +39,13 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  modelValue: {
+const model = defineModel<
+  {
     firstName: string;
     lastName: string;
     gender: string;
     seatNumber: string;
     ticketPrice: number;
-  }[];
-}>();
+  }[]
+>();
 </script>

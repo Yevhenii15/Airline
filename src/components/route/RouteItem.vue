@@ -1,7 +1,7 @@
 <template>
   <div class="mb-4 p-4 bg-[#2b2b2b] rounded-lg shadow">
     <RouteForm
-      :initial="route"
+      v-model="route"
       :airports="airports"
       :durations="durations"
       @submit="onEdit"
@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import RouteForm from "./RouteForm.vue";
 import type { flightRoute, Airport } from "../../interfaces/interfaces";
 
@@ -38,7 +39,13 @@ const emit = defineEmits<{
   (e: "edit", payload: { id: string; data: Omit<flightRoute, "_id"> }): void;
 }>();
 
-const onDelete = () => emit("delete", props.route._id);
+// Using two-way binding with v-model
+const route = ref<flightRoute>({ ...props.route });
+
+// Emit delete event
+const onDelete = () => emit("delete", route.value._id);
+
+// Emit edit event with updated data
 const onEdit = (data: Omit<flightRoute, "_id">) =>
-  emit("edit", { id: props.route._id, data });
+  emit("edit", { id: route.value._id, data });
 </script>

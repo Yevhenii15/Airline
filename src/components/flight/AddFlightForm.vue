@@ -35,7 +35,7 @@
         />
 
         <div class="flex flex-col">
-          <label for="startDate" class="text-gray-400">Aircraft type</label>
+          <label for="aircraft_id" class="text-gray-400">Aircraft type</label>
           <input
             v-model="newFlight.aircraft_id"
             type="text"
@@ -43,8 +43,9 @@
             class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
         </div>
+
         <div class="flex flex-col">
-          <label for="startDate" class="text-gray-400">Base price</label>
+          <label for="basePrice" class="text-gray-400">Base price</label>
           <input
             v-model="newFlight.basePrice"
             type="number"
@@ -53,13 +54,12 @@
           />
         </div>
 
-        <!-- Add Operating Period -->
         <div class="flex flex-col">
           <label for="startDate" class="text-gray-400">Operating Period</label>
           <input
             v-model="newFlight.operatingPeriod.startDate"
             type="date"
-            class="p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
+            class="mb-2 p-3 border border-gray-600 rounded bg-[#2b2b2b] text-white focus:ring focus:ring-blue-500"
           />
           <input
             v-model="newFlight.operatingPeriod.endDate"
@@ -68,7 +68,6 @@
           />
         </div>
 
-        <!-- Return Flight Option -->
         <div class="flex items-center space-x-2">
           <input
             v-model="newFlight.isReturnFlightRequired"
@@ -90,88 +89,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { defineModel, defineProps, defineEmits } from "vue";
 import type { NewFlight } from "../../interfaces/interfaces";
 
-// Props
-const { routes } = defineProps({
-  routes: {
-    type: Array as () => Array<any>,
-    required: true,
-  },
-});
+const newFlight = defineModel<NewFlight>({ required: true });
 
-// Emits
-const emit = defineEmits<{
-  (e: "add-flight", flight: NewFlight): void;
+// Props
+const { routes } = defineProps<{
+  routes: Array<any>;
 }>();
 
-// Flight data
-const newFlight = ref<NewFlight>({
-  flightNumber: "",
-  departureDay: "",
-  departureTime: "",
-  status: "Scheduled",
-  route: {
-    _id: "",
-    departureAirport_id: "",
-    arrivalAirport_id: "",
-    duration: "",
-  },
-  aircraft_id: "",
-  totalSeats: 192,
-  seatMap: [],
-  seats: [],
-  basePrice: 0,
-  operatingPeriod: {
-    startDate: "",
-    endDate: "",
-  },
-  isReturnFlightRequired: false,
-});
+const emit = defineEmits(["add-flight", "reset-flight"]);
 
-// Add flight handler
 const addFlightHandler = () => {
   if (!newFlight.value.route._id) {
-    console.error("Invalid route selected");
     alert("Please select a valid route.");
     return;
   }
 
-  emit("add-flight", newFlight.value); // Emit event to parent
+  emit("add-flight", newFlight.value);
   alert("Flight added successfully!");
-  resetForm();
+  emit("reset-flight"); // ask parent to reset
 };
 
-// Helper function to reset form
-const resetForm = () => {
-  newFlight.value = {
-    flightNumber: "",
-    departureDay: "",
-    departureTime: "",
-    status: "Scheduled",
-    route: {
-      _id: "",
-      departureAirport_id: "",
-      arrivalAirport_id: "",
-      duration: "",
-    },
-    aircraft_id: "",
-    totalSeats: 192,
-    seatMap: [],
-    seats: [],
-    basePrice: 0,
-    operatingPeriod: {
-      startDate: "",
-      endDate: "",
-    },
-    isReturnFlightRequired: false,
-  };
-};
-
-// Helper function to get route name
-const getRouteName = (route: any) => {
-  if (!route || !route._id) return "Unknown Route";
-  return `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
-};
+// Helper function
+const getRouteName = (route: any) =>
+  `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
 </script>

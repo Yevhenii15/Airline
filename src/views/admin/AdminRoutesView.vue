@@ -20,6 +20,7 @@
 
     <RouteForm
       v-else
+      v-model="newRouteData"
       :airports="airports"
       :durations="durations"
       @submit="addRouteHandler"
@@ -88,9 +89,22 @@ for (let hour = 0; hour <= 10; hour++) {
   }
 }
 
+const newRouteData = ref<NewFlightRoute>({
+  departureAirport_id: "",
+  arrivalAirport_id: "",
+  duration: "",
+});
+
 const addRouteHandler = async (newRoute: NewFlightRoute) => {
   await addRoute(newRoute);
   alert("Route added successfully!");
+
+  // Reset the newRouteData in the parent to clear the form
+  newRouteData.value = {
+    departureAirport_id: "",
+    arrivalAirport_id: "",
+    duration: "",
+  };
 };
 
 const updateRouteHandler = async ({

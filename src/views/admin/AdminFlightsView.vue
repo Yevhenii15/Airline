@@ -15,8 +15,12 @@
       {{ flightError || routeError }}
     </div>
 
-    <!-- Add New Flight -->
-    <AddFlightForm :routes="routes" @add-flight="addFlightHandler" />
+    <AddFlightForm
+      v-model="newFlightData"
+      :routes="routes"
+      @add-flight="addFlightHandler"
+      @reset-flight="resetNewFlight"
+    />
 
     <!-- Flights List -->
     <FlightList
@@ -28,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useFlights } from "../../modules/useFlights";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
 import AddFlightForm from "../../components/flight/AddFlightForm.vue"; // Import the new component
@@ -49,6 +53,53 @@ const {
   error: routeError,
   loading: routeLoading,
 } = useFlightRoutes();
+
+const newFlightData = ref<NewFlight>({
+  flightNumber: "",
+  departureDay: "",
+  departureTime: "",
+  status: "Scheduled",
+  route: {
+    _id: "",
+    departureAirport_id: "",
+    arrivalAirport_id: "",
+    duration: "",
+  },
+  aircraft_id: "",
+  totalSeats: 192,
+  seatMap: [],
+  seats: [],
+  basePrice: 0,
+  operatingPeriod: {
+    startDate: "",
+    endDate: "",
+  },
+  isReturnFlightRequired: false,
+});
+const resetNewFlight = () => {
+  newFlightData.value = {
+    flightNumber: "",
+    departureDay: "",
+    departureTime: "",
+    status: "Scheduled",
+    route: {
+      _id: "",
+      departureAirport_id: "",
+      arrivalAirport_id: "",
+      duration: "",
+    },
+    aircraft_id: "",
+    totalSeats: 192,
+    seatMap: [],
+    seats: [],
+    basePrice: 0,
+    operatingPeriod: {
+      startDate: "",
+      endDate: "",
+    },
+    isReturnFlightRequired: false,
+  };
+};
 
 onMounted(() => {
   fetchRoutes();
