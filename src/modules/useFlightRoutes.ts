@@ -58,8 +58,10 @@ export const useFlightRoutes = () => {
       // Update frontend state after deletion
       routes.value = routes.value.filter((route) => route._id !== _id);
       console.log("✅ Route deleted:", _id);
+      alert("Route deleted successfully");
     } catch (err) {
       console.error("❌ Error in deleteRoute:", err);
+      alert("Failed to delete route");
       error.value = (err as Error).message;
     }
   };

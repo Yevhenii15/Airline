@@ -90,6 +90,7 @@ for (let hour = 0; hour <= 10; hour++) {
 
 const addRouteHandler = async (newRoute: NewFlightRoute) => {
   await addRoute(newRoute);
+  alert("Route added successfully!");
 };
 
 const updateRouteHandler = async ({
@@ -100,5 +101,6 @@ const updateRouteHandler = async ({
   data: Omit<flightRoute, "_id">;
 }) => {
   await updateRoute(id, data);
+  alert("Route updated successfully!");
 };
 </script>

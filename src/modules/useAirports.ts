@@ -78,8 +78,10 @@ export const useAirports = () => {
       // Update frontend state after deletion
       airports.value = airports.value.filter((airport) => airport._id !== _id);
       console.log("✅ Airport deleted:", _id);
+      alert("Airport deleted successfully");
     } catch (err) {
       console.error("❌ Error in deleteAirport:", err);
+      alert("Failed to delete airport");
       error.value = (err as Error).message;
     }
   };
