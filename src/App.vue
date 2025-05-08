@@ -6,15 +6,22 @@
           <h1>FlyEAZY</h1>
         </RouterLink>
         <nav class="nav-links">
-          <RouterLink to="/auth" class="nav-item">Auth</RouterLink>
-          <RouterLink v-if="isLoggedin" to="/profile" class="nav-item"
-            >Profile</RouterLink
-          >
-          <RouterLink v-if="isAdmin" to="/admin" class="nav-item"
-            >Admin Panel</RouterLink
-          >
-          <button v-if="isLoggedin" @click="logout" class="nav-button">
+          <RouterLink v-if="isLoggedIn" to="/profile" class="nav-item">
+            Profile
+          </RouterLink>
+          <RouterLink v-if="isAdmin" to="/admin" class="nav-item">
+            Admin Panel
+          </RouterLink>
+          <button v-if="isLoggedIn" @click="logout" class="nav-button">
             LogOut
+          </button>
+          <!-- Trigger the Login/Register popup -->
+          <button
+            v-if="!isLoggedIn"
+            @click="openLoginRegisterPopup"
+            class="nav-button"
+          >
+            Login / Register
           </button>
         </nav>
       </div>
@@ -23,18 +30,36 @@
     <main class="content">
       <RouterView />
     </main>
+
+    <!-- LoginRegister modal -->
+    <LoginRegister
+      :isVisible="isLoginRegisterVisible"
+      @close="closeLoginRegisterPopup"
+    />
   </div>
 </template>
 
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
-import { computed } from "vue";
-import { useUsers } from "@/modules/auth/useUsers";
-import { state } from "@/modules/globalStates/state";
+import { ref, toRefs } from "vue";
+import { useUsers } from "./modules/auth/useUsers";
+import { state } from "./modules/globalStates/state";
+import LoginRegister from "./components/login/LoginRegister.vue";
 
+// Extract reactivity properly from state
+const { isLoggedIn, isAdmin } = toRefs(state);
 const { logout } = useUsers();
-const isLoggedin = computed(() => state.isLoggedIn);
-const isAdmin = computed(() => state.isAdmin);
+
+// Popup control
+const isLoginRegisterVisible = ref(false);
+
+const openLoginRegisterPopup = () => {
+  isLoginRegisterVisible.value = true;
+};
+
+const closeLoginRegisterPopup = () => {
+  isLoginRegisterVisible.value = false;
+};
 </script>
 
 <style scoped>

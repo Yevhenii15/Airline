@@ -23,6 +23,9 @@ const router = createRouter({
       path: "/booking-confirmation",
       name: "BookingConfirmation",
       component: () => import("../views/BookingConfirmation.vue"),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: "/profile",
@@ -113,14 +116,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
-
-watch(
-  () => state.isLoggedIn,
-  (newValue) => {
-    if (!newValue) {
-      router.push("/auth");
-    }
-  }
-);
 
 export default router;

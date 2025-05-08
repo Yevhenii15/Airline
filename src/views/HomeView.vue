@@ -81,7 +81,6 @@ import DatePicker from "../components/booking/DatePicker.vue";
 
 import { useBookings } from "../modules/useBookings";
 import { useFlights } from "../modules/useFlights";
-import { useUsers } from "../modules/auth/useUsers";
 import { useTickets } from "../modules/useTicket";
 
 // Composables
@@ -90,13 +89,10 @@ const {
   error,
   selectedFlightData,
   disabledDates,
-  formatLocalDate,
 } = useBookings();
 
 const { loading: flightLoading, flights, fetchFlights } = useFlights();
-const { getTokenAndUserId } = useUsers();
-const { getBookedSeats, bookedSeats, numberOfPassengers, tickets } =
-  useTickets();
+const { numberOfPassengers, tickets } = useTickets();
 
 const { aboutCompany, fetchAboutInfo } = useCompany();
 const companyData = ref({ name: "Loading..." });
@@ -119,17 +115,23 @@ watchEffect(() => {
 });
 
 // State
-const userId = ref<string | null>(null); // Corrected type
 const departureAirport = ref<string | null>(null); // Corrected type
 const arrivalAirport = ref<string | null>(null); // Corrected type
 const selectedFlight = ref<string | null>(null); // Corrected type
 const selectedDate = ref<Date | undefined>(undefined); // Corrected type
 // Function to redirect to the BookingView
 const redirectToBooking = () => {
+  // Use 'lsToken' to get the token from localStorage
+  const token = localStorage.getItem("lsToken");
+
+  if (!token) {
+    alert("Please log in before proceeding with the booking.");
+    return; // Exit early if not logged in
+  }
+
   if (selectedFlight.value && selectedDate.value) {
-    // Pass the selected flight and date as query parameters
     router.push({
-      name: "bookings", // Assuming your route name for BookingView is 'booking'
+      name: "bookings",
       query: {
         flight: selectedFlight.value,
         date: selectedDate.value.toISOString(),
@@ -140,15 +142,6 @@ const redirectToBooking = () => {
     alert("Please select a flight, date, and number of passengers.");
   }
 };
-// Set user ID on mount
-onMounted(() => {
-  try {
-    const { userId: fetchedUserId } = getTokenAndUserId();
-    userId.value = fetchedUserId;
-  } catch (err) {
-    console.error("Error fetching user ID:", err);
-  }
-});
 
 // Fetch flights on mount
 onMounted(() => fetchFlights());

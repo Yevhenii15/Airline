@@ -29,7 +29,6 @@ export const useUsers = () => {
       loading.value = false;
     }
   };
-
   // 🌟 Fetch Token (Login)
   const fetchToken = async (email: string, password: string): Promise<void> => {
     try {
@@ -43,8 +42,12 @@ export const useUsers = () => {
 
       updateAuthState(authResponse.data.token, authResponse.data.user);
       console.log("User logged in successfully:", authResponse);
+
+      alert("Logged in successfully!");
     } catch (err) {
       error.value = (err as Error).message;
+      console.error("Login failed:", error.value);
+      alert(`Login failed: ${error.value}`);
       resetAuthState();
     }
   };
@@ -71,8 +74,14 @@ export const useUsers = () => {
 
       updateAuthState(authResponse.data.token, authResponse.data.user);
       console.log("User registered successfully:", authResponse);
+
+      // Attempt to log the user in immediately after registration
+      await fetchToken(email, password); // Log in the user automatically
+      alert("Registered and logged in successfully!");
     } catch (err) {
       error.value = (err as Error).message;
+      console.error("Registration failed:", error.value);
+      alert(`Registration failed: ${error.value}`);
     }
   };
   // 🌟 Update User Profile
