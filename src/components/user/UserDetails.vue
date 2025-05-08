@@ -1,20 +1,28 @@
 <template>
-  <div class="bg-white shadow-md rounded-xl p-6 mb-8">
-    <h2 class="text-xl font-semibold mb-4">👤 My Profile</h2>
-
-    <!-- Profile Information -->
-    <div
-      class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 mb-6"
-    >
-      <p><strong>Name:</strong> {{ user.name }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Phone:</strong> {{ user.phone }}</p>
-      <p><strong>Date of Birth:</strong> {{ formattedDOB }}</p>
+  <div
+    class="bg-zinc-800 p-8 rounded-3xl shadow-2xl border border-[#ff7f50] text-white space-y-8"
+  >
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg text-gray-200">
+      <p>
+        <span class="font-semibold text-[#ff7f50]">Name:</span> {{ user.name }}
+      </p>
+      <p>
+        <span class="font-semibold text-[#ff7f50]">Email:</span>
+        {{ user.email }}
+      </p>
+      <p>
+        <span class="font-semibold text-[#ff7f50]">Phone:</span>
+        {{ user.phone }}
+      </p>
+      <p>
+        <span class="font-semibold text-[#ff7f50]">Date of Birth:</span>
+        {{ formattedDOB }}
+      </p>
     </div>
 
-    <!-- Update Profile Section -->
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold mb-2">✏️ Update Profile</h3>
+    <!-- Update Profile -->
+    <div>
+      <h3 class="text-xl font-bold mb-3 text-[#ff7f50]">✏️ Update Profile</h3>
       <form
         @submit.prevent="handleUpdateProfile"
         class="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -23,29 +31,32 @@
           v-model="user.name"
           type="text"
           placeholder="Name"
-          class="input"
+          class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
         />
         <input
           v-model="user.phone"
           type="text"
           placeholder="Phone"
-          class="input"
+          class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
         />
         <input
           v-model="user.email"
           type="email"
           placeholder="Email"
-          class="input"
+          class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
         />
-        <button type="submit" class="btn col-span-1 sm:col-span-2">
+        <button
+          type="submit"
+          class="col-span-1 sm:col-span-2 bg-[#ff7f50] text-black font-semibold py-2 rounded-md hover:bg-orange-500 transition"
+        >
           Update Profile
         </button>
       </form>
     </div>
 
-    <!-- Change Password Section -->
+    <!-- Change Password -->
     <div>
-      <h3 class="text-lg font-semibold mb-2">🔒 Change Password</h3>
+      <h3 class="text-xl font-bold mb-3 text-[#ff7f50]">🔒 Change Password</h3>
       <form
         @submit.prevent="handleChangePassword"
         class="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -54,24 +65,30 @@
           v-model="currentPassword"
           type="password"
           placeholder="Current Password"
-          class="input"
+          class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
         />
         <input
           v-model="newPassword"
           type="password"
           placeholder="New Password"
-          class="input"
+          class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
         />
-        <button type="submit" class="btn col-span-1 sm:col-span-2">
+        <button
+          type="submit"
+          class="col-span-1 sm:col-span-2 bg-[#ff7f50] text-black font-semibold py-2 rounded-md hover:bg-orange-500 transition"
+        >
           Change Password
         </button>
       </form>
     </div>
 
-    <p v-if="successMessage" class="text-green-500 mt-4">
+    <!-- Messages -->
+    <p v-if="successMessage" class="text-green-400 mt-4 text-sm">
       {{ successMessage }}
     </p>
-    <p v-if="errorMessage" class="text-red-500 mt-4">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="text-red-400 mt-4 text-sm">
+      {{ errorMessage }}
+    </p>
   </div>
 </template>
 

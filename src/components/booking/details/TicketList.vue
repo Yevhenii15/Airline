@@ -1,16 +1,31 @@
 <template>
   <div v-if="tickets?.length" class="mt-4">
-    <h3 class="text-md font-medium mb-2">🧾 Tickets:</h3>
+    <h3 class="text-lg font-semibold text-[#ff7f50] mb-4">🧾 Tickets</h3>
     <div
       v-for="ticket in tickets"
       :key="ticket.ticket_id"
-      class="bg-gray-100 p-3 rounded-md mb-2 text-sm"
+      class="bg-zinc-800 border border-[#ff7f50] p-4 rounded-xl shadow-inner text-gray-200 mb-3 space-y-1"
     >
-      <p>👤 Name: {{ ticket.firstName }} {{ ticket.lastName }}</p>
-      <p>🪑 Seat: {{ ticket.seatNumber }}</p>
-      <p>🚹 Gender: {{ ticket.gender }}</p>
-      <p>🎫 Price: €{{ ticket.ticketPrice.toFixed(2) }}</p>
-      <p>✈️ Flight ID: {{ ticket.flight_id }}</p>
+      <p>
+        <span class="text-[#ff7f50] font-medium">👤 Name:</span>
+        {{ ticket.firstName }} {{ ticket.lastName }}
+      </p>
+      <p>
+        <span class="text-[#ff7f50] font-medium">🪑 Seat:</span>
+        {{ ticket.seatNumber }}
+      </p>
+      <p>
+        <span class="text-[#ff7f50] font-medium">🚹 Gender:</span>
+        {{ ticket.gender }}
+      </p>
+      <p>
+        <span class="text-[#ff7f50] font-medium">🎫 Price:</span>
+        €{{ ticket.ticketPrice.toFixed(2) }}
+      </p>
+      <p>
+        <span class="text-[#ff7f50] font-medium">✈️ Flight ID:</span>
+        {{ ticket.flight_id }}
+      </p>
     </div>
   </div>
 </template>

@@ -1,4 +1,18 @@
 <template>
+  <div class="flex justify-between p-6 mb-4">
+    <router-link
+      to="/admin"
+      class="inline-block mb-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+    >
+      🔙 Back to Admin
+    </router-link>
+    <router-link
+      to="/admin_flights"
+      class="inline-block mb-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+    >
+      Create Flight ➡️
+    </router-link>
+  </div>
   <div class="bg-[#181818] min-h-screen p-6 text-white">
     <h1 class="text-3xl font-bold text-center mb-8">
       ✈️ Admin View - Flight Routes

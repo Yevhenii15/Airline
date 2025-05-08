@@ -1,5 +1,13 @@
 <template>
   <div class="p-6">
+    <router-link
+      to="/admin"
+      class="inline-block mb-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+    >
+      🔙 Back to Admin
+    </router-link>
+  </div>
+  <div class="p-6">
     <h1 class="text-2xl font-bold mb-6">📋 Admin – All Bookings</h1>
 
     <!-- Search Section -->
@@ -36,7 +44,7 @@
       <div
         v-for="booking in bookings"
         :key="booking._id"
-        class="bg-white text-black shadow-lg rounded-xl p-6 flex flex-col"
+        class="bg-black text-white border border-[#ff7f50] shadow-lg rounded-xl p-6 flex flex-col"
       >
         <!-- 1. Header -->
         <BookingHeader

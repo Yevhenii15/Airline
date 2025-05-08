@@ -1,29 +1,61 @@
 <template>
-  <div v-if="ticket && flight" class="mt-4 bg-blue-50 p-4 rounded-md shadow-md">
-    <h4 class="font-semibold text-blue-700 mb-2">✈️ Flight Details:</h4>
-    <p><strong>Flight Number:</strong> {{ flight.flightNumber }}</p>
-    <p>
-      <strong>Departure Airport:</strong>
+  <h4 class="text-[#ff7f50] font-bold text-xl mb-4">✈️ Flight Details</h4>
+
+  <div
+    v-if="ticket && flight"
+    class="mt-4 bg-zinc-800 border border-[#ff7f50] p-6 rounded-xl shadow-lg text-gray-200"
+  >
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Flight Number:</span>
+      {{ flight.flightNumber }}
+    </p>
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Departure Airport:</span>
       {{
         (flight.route.departureAirport_id &&
           airportNameMap[flight.route.departureAirport_id]) ||
         "Loading..."
       }}
     </p>
-    <p>
-      <strong>Arrival Airport:</strong>
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Arrival Airport:</span>
       {{
         (flight.route.arrivalAirport_id &&
           airportNameMap[flight.route.arrivalAirport_id]) ||
         "Loading..."
       }}
     </p>
-    <p>
-      <strong>Departure Date:</strong> {{ formatDate(ticket.departureDate) }}
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Departure Date:</span>
+      {{ formatDate(ticket.departureDate) }}
     </p>
-    <p><strong>Departure Time:</strong> {{ flight.departureTime }}</p>
-    <p><strong>Arrival Time:</strong> {{ flight.arrivalTime }}</p>
-    <p><strong>Status:</strong> {{ flight.status }}</p>
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Departure Time:</span>
+      {{ flight.departureTime }}
+    </p>
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Arrival Time:</span>
+      {{ flight.arrivalTime }}
+    </p>
+
+    <p class="mb-1">
+      <span class="text-[#ff7f50] font-medium">Status:</span>
+      <span
+        :class="{
+          'text-green-400': flight.status === 'On Time',
+          'text-yellow-400': flight.status === 'Delayed',
+          'text-red-400': flight.status === 'Cancelled',
+        }"
+        class="font-semibold"
+      >
+        {{ flight.status }}
+      </span>
+    </p>
   </div>
 </template>
 

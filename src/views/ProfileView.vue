@@ -1,54 +1,74 @@
 <template>
-  <div class="p-6 text-black max-w-4xl mx-auto">
-    <h1 class="text-2xl text-white font-bold mb-6">👤 My Bookings</h1>
+  <section
+    class="w-full bg-gradient-to-br from-black via-zinc-900 to-black bg-opacity-80 rounded-3xl shadow-2xl border border-[#ff7f50] p-10 text-white mt-8 max-w-6xl mx-auto space-y-8"
+  >
+    <!-- Title -->
+    <h1
+      class="text-5xl font-extrabold text-center tracking-wide text-[#ff7f50] mb-6"
+    >
+      👤 My Profile
+    </h1>
 
     <!-- Loading & Error -->
-    <div v-if="userLoading" class="text-blue-500 mb-4">
-      Loading your profile...
+    <div
+      v-if="userLoading"
+      class="text-center text-orange-300 text-xl font-semibold"
+    >
+      🔄 Loading your profile...
+    </div>
+    <div
+      v-if="userError && bookingError"
+      class="text-center text-red-400 text-xl font-semibold"
+    >
+      ❗ {{ userError || bookingError }}
     </div>
 
-    <div v-if="userError && bookingError" class="text-red-600 mb-4">
-      {{ userError || bookingError }}
-    </div>
-
+    <!-- User Info -->
     <UserDetails v-if="user" v-model="user" />
 
     <!-- Tabs -->
-    <div v-if="bookings.length" class="flex space-x-4 mb-6">
+    <div v-if="bookings.length" class="flex justify-center space-x-8 mb-6">
       <button
         @click="activeTab = 'upcoming'"
-        :class="
+        :class="[
+          'px-4 py-2 rounded-full font-semibold transition duration-200',
           activeTab === 'upcoming'
-            ? 'border-b-2 border-blue-600 text-gray-400 font-semibold'
-            : 'text-white hover:text-gray-200'
-        "
+            ? 'bg-[#ff7f50] text-black shadow-lg'
+            : 'text-white hover:text-orange-300',
+        ]"
       >
         Upcoming ({{ upcomingBookings.length }})
       </button>
       <button
         @click="activeTab = 'past'"
-        :class="
+        :class="[
+          'px-4 py-2 rounded-full font-semibold transition duration-200',
           activeTab === 'past'
-            ? 'border-b-2 border-blue-600 text-gray-400 font-semibold'
-            : 'text-white hover:text-gray-200'
-        "
+            ? 'bg-[#ff7f50] text-black shadow-lg'
+            : 'text-white hover:text-orange-300',
+        ]"
       >
         Past ({{ pastBookings.length }})
       </button>
     </div>
-    <!-- Loading & Error -->
-    <div v-if="bookingLoading" class="text-blue-500 mb-4">
-      Loading your booking...
+
+    <!-- Booking Loading -->
+    <div
+      v-if="bookingLoading"
+      class="text-center text-orange-300 text-xl font-semibold"
+    >
+      🔄 Loading your bookings...
     </div>
-    <!-- Booking Cards Grid -->
+
+    <!-- Booking Cards -->
     <div
       v-if="filteredBookings.length"
-      class="grid grid-cols-1 sm:grid-cols-2 gap-6"
+      class="grid grid-cols-1 sm:grid-cols-2 gap-8"
     >
       <div
         v-for="booking in filteredBookings"
         :key="booking._id"
-        class="bg-white shadow-md rounded-xl p-6 flex flex-col"
+        class="bg-zinc-800 p-6 rounded-2xl shadow-inner flex flex-col space-y-4 border border-zinc-700"
       >
         <!-- Header -->
         <BookingHeader
@@ -61,13 +81,11 @@
         <!-- Booking Info -->
         <BookingInfo :booking="booking" :formatDate="formatDate" />
 
-        <!-- Flight Details for first ticket -->
-        <div v-if="flightLoading" class="text-blue-500 mb-4">
-          Loading flight details...
+        <!-- Flight Details -->
+        <div v-if="flightLoading" class="text-orange-300">
+          🔄 Loading flight details...
         </div>
-        <div v-if="flightError" class="text-red-600 mb-4">
-          {{ flightError }}
-        </div>
+        <div v-if="flightError" class="text-red-400">❗ {{ flightError }}</div>
         <FlightDetails
           :ticket="booking.tickets[0]"
           :flight="flightFor(booking.tickets[0].flight_id)"
@@ -79,14 +97,14 @@
       </div>
     </div>
 
-    <!-- No items in selected tab -->
+    <!-- No Bookings in Selected Tab -->
     <div
       v-if="!bookingLoading && bookings.length && filteredBookings.length === 0"
-      class="text-white"
+      class="text-center text-gray-300 text-lg"
     >
       No {{ activeTab }} bookings.
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
