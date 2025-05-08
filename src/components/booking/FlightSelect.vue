@@ -1,59 +1,68 @@
 <template>
   <div>
     <!-- Departure Airport -->
-    <label class="block text-blue-600 font-medium">Departure Airport:</label>
+    <label class="block text-[#ff7f50] text-left font-medium">
+      Departure Airport:
+    </label>
     <select
       v-model="modelDepartureAirport"
-      class="w-full p-3 border border-blue-500 rounded-lg text-black"
+      class="w-full p-3 border border-[#ff7f50] rounded-lg text-black"
     >
       <option
-        v-for="airport in uniqueDepartureAirports"
-        :key="airport"
-        :value="airport"
+        v-for="airportCode in uniqueDepartureAirports"
+        :key="airportCode"
+        :value="airportCode"
       >
-        {{ airport }}
+        {{ airportNameMap[airportCode] || airportCode }} ({{ airportCode }})
       </option>
     </select>
 
     <!-- Arrival Airport -->
     <label
       v-if="modelDepartureAirport"
-      class="block text-blue-600 font-medium mt-4"
-      >Arrival Airport:</label
+      class="block text-[#ff7f50] text-left font-medium mt-4"
     >
+      Arrival Airport:
+    </label>
     <select
       v-if="modelDepartureAirport"
       v-model="modelArrivalAirport"
-      class="w-full p-3 border border-blue-500 rounded-lg text-black"
+      class="w-full p-3 border border-[#ff7f50] rounded-lg text-black"
     >
       <option
-        v-for="airport in availableArrivalAirports"
-        :key="airport"
-        :value="airport"
+        v-for="airportCode in availableArrivalAirports"
+        :key="airportCode"
+        :value="airportCode"
       >
-        {{ airport }}
+        {{ airportNameMap[airportCode] || airportCode }} ({{ airportCode }})
       </option>
     </select>
 
     <!-- Flight Selection -->
     <label
       v-if="modelArrivalAirport"
-      class="block text-blue-600 font-medium mt-4"
-      >Select Flight:</label
+      class="block text-[#ff7f50] text-left font-medium mt-4"
     >
+      Select Flight:
+    </label>
     <select
       v-if="modelArrivalAirport"
       v-model="modelSelectedFlight"
-      class="w-full p-3 border border-blue-500 rounded-lg text-black"
+      class="w-full p-3 border border-[#ff7f50] rounded-lg text-black"
     >
       <option
         v-for="flight in availableFlights"
         :key="flight._id"
         :value="flight._id"
       >
-        {{ flight.flightNumber }} ({{ flight.route.departureAirport_id }})
-        {{ flight.departureTime }} -> ({{ flight.route.arrivalAirport_id }})
-        {{ flight.arrivalTime }} ${{ flight.basePrice }}
+        {{ flight.flightNumber }}
+        ({{
+          airportNameMap[flight.route.departureAirport_id] ||
+          flight.route.departureAirport_id
+        }}) {{ flight.departureTime }} -> ({{
+          airportNameMap[flight.route.arrivalAirport_id] ||
+          flight.route.arrivalAirport_id
+        }}) {{ flight.arrivalTime }} ${{ flight.basePrice }}
       </option>
     </select>
   </div>
@@ -62,13 +71,17 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useFlights } from "../../modules/useFlights";
+import { useAirports } from "../../modules/useAirports";
+
 const { flights, fetchFlights } = useFlights();
+const { fetchAirports, airportNameMap } = useAirports();
 
 const modelDepartureAirport = defineModel<string | null>("departureAirport");
 const modelArrivalAirport = defineModel<string | null>("arrivalAirport");
 const modelSelectedFlight = defineModel<string | null>("selectedFlight");
+
 const today = new Date();
-today.setHours(0, 0, 0, 0); // Normalize time
+today.setHours(0, 0, 0, 0);
 
 const filteredFlights = computed(() => {
   return flights.value.filter((flight) => {
@@ -80,31 +93,35 @@ const filteredFlights = computed(() => {
 
 const uniqueDepartureAirports = computed(() => {
   return Array.from(
-    new Set(
-      filteredFlights.value.map((flight) => flight.route.departureAirport_id)
-    )
+    new Set(filteredFlights.value.map((f) => f.route.departureAirport_id))
   ) as string[];
 });
 
 const availableArrivalAirports = computed(() => {
   if (!modelDepartureAirport.value) return [];
-  const arrivalAirports = filteredFlights.value
-    .filter(
-      (flight) =>
-        flight.route.departureAirport_id === modelDepartureAirport.value &&
-        flight.route.arrivalAirport_id !== modelDepartureAirport.value
+  return Array.from(
+    new Set(
+      filteredFlights.value
+        .filter(
+          (f) =>
+            f.route.departureAirport_id === modelDepartureAirport.value &&
+            f.route.arrivalAirport_id !== modelDepartureAirport.value
+        )
+        .map((f) => f.route.arrivalAirport_id)
     )
-    .map((flight) => flight.route.arrivalAirport_id);
-  return [...new Set(arrivalAirports)] as string[];
+  ) as string[];
 });
 
 const availableFlights = computed(() => {
   return filteredFlights.value.filter(
-    (flight) =>
-      flight.route.departureAirport_id === modelDepartureAirport.value &&
-      flight.route.arrivalAirport_id === modelArrivalAirport.value
+    (f) =>
+      f.route.departureAirport_id === modelDepartureAirport.value &&
+      f.route.arrivalAirport_id === modelArrivalAirport.value
   );
 });
 
-onMounted(() => fetchFlights());
+onMounted(() => {
+  fetchFlights();
+  fetchAirports();
+});
 </script>

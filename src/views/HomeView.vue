@@ -1,116 +1,191 @@
 <template>
-  <div class="home-container">
-    <header class="hero">
-      <h1 class="hero-title">Welcome to FlyEAZY</h1>
-      <p class="hero-subtitle">Your journey begins here</p>
-      <router-link to="/flights" class="btn-primary">Book a Flight</router-link>
-    </header>
+  <div
+    class="min-h-screen w-[100%] text-white flex flex-col items-center justify-center px-4 py-5"
+  >
+    <!-- Header / Booking Section -->
+    <header
+      class="bg-black bg-opacity-80 w-full max-w-3xl rounded-3xl shadow-2xl border border-[#ff7f50] p-10 mt-12 mb-8 text-center"
+    >
+      <h1 class="text-5xl font-extrabold mb-3 tracking-wide text-white">
+        Welcome to <span class="text-[#ff7f50]">FlyEAZY</span>
+      </h1>
+      <p class="text-xl font-medium text-gray-300 mb-2">
+        Your journey begins here
+      </p>
+      <p class="text-m text-gray-400 mb-6">Book your flight</p>
 
-    <div class="info-sections">
-      <router-link to="/about" class="info-card">
-        <h2>About Us</h2>
-        <p>Learn more about our airline and our story.</p>
-      </router-link>
-      <router-link to="/flights" class="info-card">
-        <h2>Flights</h2>
-        <p>Check available flights and book your tickets.</p>
-      </router-link>
-      <router-link to="/auth" class="info-card">
-        <h2>Authentication</h2>
-        <p>Login or manage your airline services.</p>
-      </router-link>
-    </div>
+      <!-- Loading and Error -->
+      <div v-if="flightLoading || bookingLoading" class="text-orange-300 mb-3">
+        ⏳ Loading...
+      </div>
+      <div v-else-if="error" class="text-red-400 font-semibold mb-3">
+        {{ error }}
+      </div>
+
+      <!-- Booking Form -->
+      <div class="space-y-6 text-left">
+        <FlightSelect
+          v-model:departureAirport="departureAirport"
+          v-model:arrivalAirport="arrivalAirport"
+          v-model:selectedFlight="selectedFlight"
+        />
+
+        <DatePicker
+          v-if="selectedFlight"
+          v-model="selectedDate"
+          :disabledDates="disabledDates"
+        />
+
+        <!-- Passengers input -->
+        <div v-if="selectedFlight && selectedDate">
+          <label class="block text-[#ff7f50] font-medium mb-2">
+            Number of Passengers:
+          </label>
+          <input
+            v-model.number="numberOfPassengers"
+            type="number"
+            min="1"
+            max="10"
+            class="w-full p-3 bg-white border border-[#ff7f50] rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff7f50]"
+            required
+            placeholder="Enter number of passengers"
+          />
+        </div>
+
+        <!-- Proceed button -->
+        <button
+          v-if="selectedFlight && selectedDate && numberOfPassengers > 0"
+          @click="redirectToBooking"
+          class="w-full bg-[#ff7f50] text-white font-semibold py-3 rounded-xl hover:bg-[#ff9566] transition duration-300"
+        >
+          ✈️ Proceed to Booking
+        </button>
+      </div>
+    </header>
+    <CompanyCartInfo v-model="aboutCompanySanitized" />
+    <FlightCards :flights="flights" :loading="flightLoading" :error="error" />
   </div>
 </template>
 
-<script>
-import { ref, onMounted, watchEffect } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, watchEffect, watch, computed } from "vue";
 import { useCompany } from "../modules/useCompany";
+import CompanyCartInfo from "../components/home/CompanyInfoCard.vue";
+import FlightCards from "../components/home/FlightCard.vue";
+import { useRouter } from "vue-router";
 
-export default {
-  name: "HomeView",
-  setup() {
-    const { aboutCompany, fetchAboutInfo } = useCompany();
-    const companyData = ref({ name: "Loading..." });
+const router = useRouter();
 
-    onMounted(async () => {
-      await fetchAboutInfo();
+import FlightSelect from "../components/booking/FlightSelect.vue";
+import DatePicker from "../components/booking/DatePicker.vue";
+
+import { useBookings } from "../modules/useBookings";
+import { useFlights } from "../modules/useFlights";
+import { useUsers } from "../modules/auth/useUsers";
+import { useTickets } from "../modules/useTicket";
+
+// Composables
+const {
+  loading: bookingLoading,
+  error,
+  selectedFlightData,
+  disabledDates,
+  formatLocalDate,
+} = useBookings();
+
+const { loading: flightLoading, flights, fetchFlights } = useFlights();
+const { getTokenAndUserId } = useUsers();
+const { getBookedSeats, bookedSeats, numberOfPassengers, tickets } =
+  useTickets();
+
+const { aboutCompany, fetchAboutInfo } = useCompany();
+const companyData = ref({ name: "Loading..." });
+const aboutCompanySanitized = computed(() => {
+  const company = aboutCompany.value;
+  if (!company)
+    return { name: "", description: "", address: "", phone: "", email: "" };
+  const { name, description, address, phone, email } = company;
+  return { name, description, address, phone, email };
+});
+
+onMounted(async () => {
+  await fetchAboutInfo();
+});
+
+watchEffect(() => {
+  if (aboutCompany.value) {
+    companyData.value = { ...aboutCompany.value };
+  }
+});
+
+// State
+const userId = ref<string | null>(null); // Corrected type
+const departureAirport = ref<string | null>(null); // Corrected type
+const arrivalAirport = ref<string | null>(null); // Corrected type
+const selectedFlight = ref<string | null>(null); // Corrected type
+const selectedDate = ref<Date | undefined>(undefined); // Corrected type
+// Function to redirect to the BookingView
+const redirectToBooking = () => {
+  if (selectedFlight.value && selectedDate.value) {
+    // Pass the selected flight and date as query parameters
+    router.push({
+      name: "bookings", // Assuming your route name for BookingView is 'booking'
+      query: {
+        flight: selectedFlight.value,
+        date: selectedDate.value.toISOString(),
+        passengers: numberOfPassengers.value.toString(),
+      },
     });
-
-    watchEffect(() => {
-      if (aboutCompany.value) {
-        companyData.value = { ...aboutCompany.value };
-      }
-    });
-
-    return { companyData };
-  },
+  } else {
+    alert("Please select a flight, date, and number of passengers.");
+  }
 };
-</script>
+// Set user ID on mount
+onMounted(() => {
+  try {
+    const { userId: fetchedUserId } = getTokenAndUserId();
+    userId.value = fetchedUserId;
+  } catch (err) {
+    console.error("Error fetching user ID:", err);
+  }
+});
 
-<style scoped>
-.home-container {
-  text-align: center;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-.hero {
-  background: rgba(0, 0, 0, 0.6);
-  padding: 80px 20px;
-  border-radius: 12px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-}
-.hero-title {
-  font-size: 42px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.hero-subtitle {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-.btn-primary {
-  display: inline-block;
-  padding: 12px 24px;
-  background: #ff7f50;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  transition: 0.3s;
-  font-size: 18px;
-  font-weight: bold;
-}
-.btn-primary:hover {
-  background: #ff4500;
-}
-.info-sections {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 50px;
-  gap: 20px;
-}
-.info-card {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-decoration: none;
-  color: #333;
-  font-size: 20px;
-  width: 280px;
-  transition: 0.3s;
-  text-align: center;
-  font-weight: bold;
-}
-.info-card:hover {
-  background: #ff7f50;
-  color: white;
-  transform: scale(1.05);
-}
-</style>
+// Fetch flights on mount
+onMounted(() => fetchFlights());
+
+// Watch selectedFlight to update selectedFlightData & ticket prices
+watch(selectedFlight, (flightId) => {
+  const flight = flights.value.find((f) => f._id === flightId);
+  selectedFlightData.value = flight || null;
+
+  // Update ticket prices when flight changes
+  if (flight) {
+    tickets.value.forEach((ticket) => {
+      ticket.ticketPrice = flight.basePrice || 0;
+    });
+  }
+});
+
+// Watch passenger count to sync tickets
+watch(numberOfPassengers, (count) => {
+  const current = tickets.value.length;
+  if (count > current) {
+    for (let i = 0; i < count - current; i++) {
+      tickets.value.push({
+        firstName: "",
+        lastName: "",
+        gender: "Male",
+        seatNumber: "",
+        ticketPrice: selectedFlightData.value?.basePrice || 0,
+      });
+    }
+  } else {
+    tickets.value.splice(count);
+  }
+});
+
+// Debug: Watch disabledDates
+watch(disabledDates, () => {
+  console.log("Disabled Dates:", disabledDates.value);
+});
+</script>

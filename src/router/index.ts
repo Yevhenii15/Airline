@@ -12,19 +12,6 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/about",
-      name: "about",
-      component: () => import("../views/AboutView.vue"),
-    },
-    {
-      path: "/flights",
-      name: "flights",
-      component: () => import("../views/FlightsView.vue"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: "/bookings",
       name: "bookings",
       component: () => import("../views/BookingView.vue"),

@@ -64,6 +64,7 @@
 import { ref, onMounted } from "vue";
 import type { Booking, Flight } from "../interfaces/interfaces";
 import { useFlights } from "@/modules/useFlights";
+import { formatDate } from "../modules/functions/dateFormater";
 
 import BookingHeader from "@/components/booking/details/BookingHeader.vue";
 import BookingInfo from "@/components/booking/details/BookingInfo.vue";
@@ -74,18 +75,6 @@ const { fetchFlightById, error, loading } = useFlights();
 
 const booking = ref<Booking | null>(null);
 const flightsById = ref<Record<string, Flight>>({});
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
 
 onMounted(async () => {
   const stored = localStorage.getItem("latestBooking");

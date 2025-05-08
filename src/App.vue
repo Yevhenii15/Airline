@@ -6,8 +6,6 @@
           <h1>FlyEAZY</h1>
         </RouterLink>
         <nav class="nav-links">
-          <RouterLink to="/about" class="nav-item">About</RouterLink>
-          <RouterLink to="/flights" class="nav-item">Flights</RouterLink>
           <RouterLink to="/auth" class="nav-item">Auth</RouterLink>
           <RouterLink v-if="isLoggedin" to="/profile" class="nav-item"
             >Profile</RouterLink

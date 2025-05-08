@@ -94,6 +94,7 @@ import { onMounted, ref, computed } from "vue";
 import { useBookings } from "../modules/useBookings";
 import { useFlights } from "../modules/useFlights";
 import { useUsers } from "../modules/auth/useUsers";
+import { formatDate } from "../modules/functions/dateFormater";
 
 import UserDetails from "@/components/user/UserDetails.vue";
 import BookingHeader from "@/components/booking/details/BookingHeader.vue";
@@ -173,15 +174,5 @@ async function cancel(id: string) {
   if (confirm("Cancel this booking?")) {
     await cancelBooking(id);
   }
-}
-
-// Format ISO date → dd MMM yyyy
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 }
 </script>

@@ -1,5 +1,5 @@
 import type { Airport } from "../interfaces/interfaces";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useUsers } from "./auth/useUsers";
 import { makeRequest } from "./functions/makeRequest";
 const { getTokenAndUserId } = useUsers();
@@ -85,6 +85,16 @@ export const useAirports = () => {
       error.value = (err as Error).message;
     }
   };
+  /**
+   * Computed map of airport codes (etea) to airport names
+   */
+  const airportNameMap = computed(() => {
+    const map: Record<string, string> = {};
+    for (const airport of airports.value) {
+      map[airport.airportCode] = `${airport.name}, ${airport.cityName}`;
+    }
+    return map;
+  });
 
   return {
     airports,
@@ -94,5 +104,6 @@ export const useAirports = () => {
     fetchAirports,
     fetchAndStoreAirport,
     deleteAirport,
+    airportNameMap,
   };
 };

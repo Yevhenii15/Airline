@@ -1,89 +1,159 @@
 <template>
-  <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-    <h2 class="text-3xl font-bold text-blue-600 mb-6">Book a Flight</h2>
+  <div
+    class="max-w-4xl mx-auto p-6 bg-black shadow-2xl my-10 rounded-2xl border border-[#ff7f50]"
+  >
+    <!-- Flight Details -->
     <div
-      v-if="flightLoading || bookingLoading"
-      class="text-center text-blue-400 text-lg"
+      v-if="selectedFlight && selectedDate && numberOfPassengers"
+      class="mb-10 p-6 bg-[#181818] rounded-xl border border-[#ff7f50]"
     >
-      ⏳ Loading...
+      <h3
+        class="text-3xl font-semibold text-[#ff7f50] mb-6 text-center tracking-wide"
+      >
+        Flight Details
+      </h3>
+      <div class="flex gap-4 text-white text-base">
+        <div class="w-1/2">
+          <p>
+            <span class="font-medium text-lg">Flight Number:</span>
+            <span class="ml-2">{{ selectedFlightData?.flightNumber }}</span>
+          </p>
+          <p>
+            <span class="font-medium text-lg">From:</span>
+            <span class="ml-2">
+              {{
+                (selectedFlightData?.route?.departureAirport_id &&
+                  airportNameMap[
+                    selectedFlightData.route.departureAirport_id
+                  ]) ||
+                "Unknown"
+              }}
+            </span>
+          </p>
+          <p>
+            <span class="font-medium text-lg">To:</span>
+            <span class="ml-2">
+              {{
+                (selectedFlightData?.route?.arrivalAirport_id &&
+                  airportNameMap[selectedFlightData.route.arrivalAirport_id]) ||
+                "Unknown"
+              }}
+            </span>
+          </p>
+
+          <p>
+            <span class="font-medium text-lg">Date:</span>
+            <span class="ml-2">{{ selectedDate.toLocaleDateString() }}</span>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span class="font-medium text-lg">Departure Time:</span>
+            <span class="ml-2">{{ selectedFlightData?.departureTime }}</span>
+          </p>
+          <p>
+            <span class="font-medium text-lg">Arrival Time:</span>
+            <span class="ml-2">{{ selectedFlightData?.arrivalTime }}</span>
+          </p>
+          <p>
+            <span class="font-medium text-lg">Passengers:</span>
+            <span class="ml-2">{{ numberOfPassengers }}</span>
+          </p>
+          <p>
+            <span class="font-medium text-lg">Base Price:</span>
+            <span class="ml-2">${{ selectedFlightData?.basePrice }}</span>
+          </p>
+        </div>
+      </div>
     </div>
-    <div v-else-if="error" class="text-center text-red-500 font-semibold">
-      {{ error }}
+
+    <!-- Seat selection -->
+    <h2 class="text-2xl font-bold text-[#ff7f50] mb-4 text-center">
+      Choose Seats
+    </h2>
+    <div v-if="selectedFlight && selectedDate && !loadingSeats" class="mb-8">
+      <SeatMap
+        :seat-map="availableSeats"
+        :selected-seats="selectedSeats"
+        @select-seat="handleSeatSelect"
+      />
     </div>
-
-    <FlightSelect
-      v-model:departureAirport="departureAirport"
-      v-model:arrivalAirport="arrivalAirport"
-      v-model:selectedFlight="selectedFlight"
-    />
-
-    <DatePicker
-      v-if="selectedFlight"
-      v-model="selectedDate"
-      :disabledDates="disabledDates"
-    />
-
-    <!-- Number of Passengers -->
-    <label
-      v-if="selectedFlight && selectedDate"
-      class="block text-blue-600 font-medium"
-    >
-      Number of Passengers:
-    </label>
-    <input
-      v-if="selectedFlight && selectedDate"
-      v-model.number="numberOfPassengers"
-      type="number"
-      min="1"
-      max="10"
-      class="w-full p-3 border border-blue-500 rounded-lg text-black"
-      required
-    />
-
-    <SeatMap
-      v-if="selectedFlight && selectedDate && !loadingSeats"
-      :seat-map="availableSeats"
-      :selected-seats="selectedSeats"
-      @select-seat="handleSeatSelect"
-    />
-    <p v-if="loadingSeats" class="text-blue-500 font-medium mt-4">
+    <p v-if="loadingSeats" class="text-[#ff7f50] font-medium mt-4 text-center">
       Loading seats...
     </p>
 
-    <PassengerForm v-if="selectedSeats.length > 0" v-model="tickets" />
+    <!-- Passenger Info -->
+    <div v-if="selectedSeats.length > 0">
+      <h2 class="text-2xl font-bold text-[#ff7f50] mb-6 text-center">
+        Passenger Info
+      </h2>
+      <PassengerForm v-model="tickets" />
+    </div>
 
-    <h3 class="text-xl font-bold text-blue-600 mt-6">
-      Total Price: ${{ totalPrice }}
-    </h3>
+    <!-- Total Price -->
+    <div
+      class="mt-8 flex justify-between items-center bg-[#181818] p-4 rounded-lg border border-[#ff7f50]"
+    >
+      <h3 class="text-xl font-bold text-[#ff7f50]">Total Price</h3>
+      <h3 class="text-white font-bold text-xl">${{ totalPrice }}</h3>
+    </div>
 
+    <!-- Booking button -->
     <button
       @click="submitBooking"
       :disabled="bookingLoading"
-      class="mt-6 bg-green-600 text-white px-8 py-3 rounded-lg"
+      class="mt-8 w-full bg-[#22c55e] text-white text-lg font-semibold px-6 py-3 rounded-lg transition-all hover:bg-[#16a34a] disabled:bg-gray-500 disabled:cursor-not-allowed"
     >
       {{ bookingLoading ? "Processing..." : "Confirm Booking" }}
     </button>
 
-    <p v-if="error" class="text-red-500 mt-4">{{ error }}</p>
+    <!-- Error message -->
+    <p v-if="error" class="text-red-500 mt-4 text-center font-medium">
+      {{ error }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-import FlightSelect from "../components/booking/FlightSelect.vue";
+// Import components
 import SeatMap from "../components/booking/SeatMap.vue";
 import PassengerForm from "../components/booking/PassengerForm.vue";
-import DatePicker from "../components/booking/DatePicker.vue";
 
+// Import composables and hooks
 import { useBookings } from "../modules/useBookings";
 import { useFlights } from "../modules/useFlights";
 import { useUsers } from "../modules/auth/useUsers";
 import { useTickets } from "../modules/useTicket";
 import type { Booking } from "../interfaces/interfaces";
+import { useRoute } from "vue-router";
+import { useAirports } from "../modules/useAirports";
+
+const { airportNameMap, fetchAirports } = useAirports();
+
+onMounted(() => {
+  fetchAirports(); // Make sure airport data is loaded
+});
+
+const route = useRoute();
+
+onMounted(() => {
+  if (route.query.flight) {
+    selectedFlight.value = route.query.flight as string;
+  }
+
+  if (route.query.date) {
+    selectedDate.value = new Date(route.query.date as string);
+  }
+
+  if (route.query.passengers) {
+    numberOfPassengers.value = parseInt(route.query.passengers as string);
+  }
+});
 
 // Composables
 const {
@@ -107,15 +177,13 @@ const {
   handleSeatSelect,
 } = useTickets();
 
-// State
+// State variables
 const userId = ref<string | null>(null);
-const departureAirport = ref<string | null>(null);
-const arrivalAirport = ref<string | null>(null);
 const selectedFlight = ref<string | null>(null);
 const selectedDate = ref<Date | undefined>(undefined);
 const loadingSeats = ref(false);
 
-// Set user ID on mount
+// Fetch user ID when component mounts
 onMounted(() => {
   try {
     const { userId: fetchedUserId } = getTokenAndUserId();
@@ -125,22 +193,24 @@ onMounted(() => {
   }
 });
 
-// Fetch flights on mount
+// Fetch flights data on mount
 onMounted(() => fetchFlights());
 
-// Watch selectedFlight to update selectedFlightData & ticket prices
-watch(selectedFlight, (flightId) => {
-  const flight = flights.value.find((f) => f._id === flightId);
-  selectedFlightData.value = flight || null;
+watchEffect(() => {
+  if (!selectedFlight.value || flights.value.length === 0) return;
 
-  // Update ticket prices when flight changes
+  const flight = flights.value.find((f) => f._id === selectedFlight.value);
   if (flight) {
+    selectedFlightData.value = flight;
+
+    // Update ticket prices only once when basePrice is known
     tickets.value.forEach((ticket) => {
       ticket.ticketPrice = flight.basePrice || 0;
     });
   }
 });
 
+// Watch for changes in selected flight and date to fetch booked seats
 watch([selectedFlight, selectedDate], async ([flightId, date]) => {
   if (flightId && date instanceof Date) {
     loadingSeats.value = true;
@@ -151,7 +221,7 @@ watch([selectedFlight, selectedDate], async ([flightId, date]) => {
   }
 });
 
-// Watch passenger count to sync tickets
+// Watch for changes in passenger count and update tickets
 watch(numberOfPassengers, (count) => {
   const current = tickets.value.length;
   if (count > current) {
@@ -169,12 +239,12 @@ watch(numberOfPassengers, (count) => {
   }
 });
 
-// Total price computed
+// Compute total price based on selected tickets
 const totalPrice = computed(() =>
   tickets.value.reduce((sum, t) => sum + t.ticketPrice, 0)
 );
 
-// Submit booking
+// Submit booking function
 const submitBooking = async () => {
   if (!selectedFlight.value || !selectedDate.value) {
     alert("Please select a flight and a valid date");
@@ -182,7 +252,7 @@ const submitBooking = async () => {
   }
 
   try {
-    const { userId, email } = getTokenAndUserId(); // Extract email along with userId
+    const { userId, email } = getTokenAndUserId(); // Extract user ID and email
 
     const bookingData: Booking = {
       user_id: userId || "", // Use userId
@@ -203,18 +273,20 @@ const submitBooking = async () => {
       })),
     };
 
+    // Create booking
     await createBooking(bookingData);
 
-    // Option 1: Pass via localStorage (preferred for larger data)
+    // Save the latest booking data in localStorage (for persistence)
     localStorage.setItem("latestBooking", JSON.stringify(bookingData));
 
+    // Redirect to the booking confirmation page
     router.push("/booking-confirmation");
   } catch (err) {
     alert("Booking failed. Please try again.");
   }
 };
 
-// Debug: Watch disabledDates
+// Debug: Watch disabledDates (for any changes in disabled dates)
 watch(disabledDates, () => {
   console.log("Disabled Dates:", disabledDates.value);
 });

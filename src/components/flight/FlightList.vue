@@ -109,13 +109,13 @@
           📅 Operating Period:
           {{
             flight.operatingPeriod && flight.operatingPeriod.startDate
-              ? formatDateOnly(flight.operatingPeriod.startDate)
+              ? formatDate(flight.operatingPeriod.startDate)
               : "N/A"
           }}
           to
           {{
             flight.operatingPeriod && flight.operatingPeriod.endDate
-              ? formatDateOnly(flight.operatingPeriod.endDate)
+              ? formatDate(flight.operatingPeriod.endDate)
               : "N/A"
           }}
         </p>
@@ -149,6 +149,7 @@ import { ref, onMounted, watch } from "vue";
 import { useFlights } from "../../modules/useFlights";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
 import type { Flight } from "../../interfaces/interfaces";
+import { formatDate } from "../../modules/functions/dateFormater";
 
 const { flights, fetchFlights, deleteFlight, updateFlight } = useFlights();
 const { routes, fetchRoutes } = useFlightRoutes();
@@ -182,11 +183,6 @@ const saveUpdatedFlight = async () => {
 const getRouteName = (route: any) => {
   if (!route || !route._id) return "Unknown Route";
   return `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
-};
-
-const formatDateOnly = (dateString: string) => {
-  if (!dateString) return "";
-  return dateString.split("T")[0]; // Extract YYYY-MM-DD
 };
 
 onMounted(() => {
