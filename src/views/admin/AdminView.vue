@@ -1,13 +1,13 @@
 <template>
   <body class="flex items-center justify-center">
     <div
-      class="p-6 bg-black w-[90%] rounded-2xl shadow-lg border border-[#ff7f50]"
+      class="p-10 bg-black w-[90%] rounded-2xl shadow-lg border border-[#ff7f50]"
     >
       <h1 class="text-4xl text-center text-orange-500 mb-8 font-bold">
         Admin Panel
       </h1>
       <div
-        class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center"
+        class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 justify-items-center"
       >
         <router-link
           v-for="route in adminRoutes"
@@ -57,6 +57,13 @@ export default {
           label: "Manage Bookings",
           description:
             "View, edit, and manage customer bookings and flight reservations.",
+        },
+        {
+          path: "/admin_booked_seats",
+          name: "admin_booked_seats",
+          label: "Booked Seats",
+          description:
+            "View and manage booked seats for flights, including cancellations.",
         },
         {
           path: "/admin_aboutCompany",

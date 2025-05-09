@@ -14,6 +14,7 @@
     >
       🔄 Loading destinations...
     </div>
+
     <div
       v-else-if="error"
       class="text-center text-red-400 text-xl font-semibold"
@@ -21,77 +22,85 @@
       ❗ {{ error }}
     </div>
 
-    <div
-      v-else
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-    >
+    <div v-else>
       <div
-        v-for="flight in flights"
-        :key="flight._id"
-        class="bg-zinc-800 p-6 rounded-xl shadow-inner border border-[#ff7f50] flex flex-col justify-between"
+        v-if="activeFlights.length === 0"
+        class="text-center text-yellow-300 text-lg font-medium"
       >
-        <div class="flex flex-col justify-between h-full">
-          <!-- Flight Info Section -->
-          <div
-            class="flex items-center justify-between border-b border-[#ff7f50] pb-2 mb-3"
-          >
-            <p class="text-lg font-bold text-white">
-              ✈️
-              {{ flight.flightNumber }}
-            </p>
-          </div>
+        🚫 No active flights available at the moment.
+      </div>
 
-          <!-- Flight Details -->
-          <div class="space-y-2 text-gray-300 text-sm">
-            <p>
-              <strong class="text-white">From:</strong>
-              {{
-                airportNameMap[flight.route.departureAirport_id] ||
-                flight.route.departureAirport_id
-              }}
-            </p>
-            <p>
-              <strong class="text-white">To:</strong>
-              {{
-                airportNameMap[flight.route.arrivalAirport_id] ||
-                flight.route.arrivalAirport_id
-              }}
-            </p>
-            <p>
-              <strong class="text-white">Departure Date:</strong>
-              {{ flight.departureDay }}
-            </p>
-            <p>
-              <strong class="text-white">Departure Time:</strong>
-              {{ flight.departureTime }}
-            </p>
-            <p>
-              <strong class="text-white">Arrival Time:</strong>
-              {{ flight.arrivalTime }}
-            </p>
-            <p>
-              <strong class="text-white">Duration:</strong>
-              {{ flight.route.duration }}
-            </p>
-            <p>
-              <strong class="text-white">Operating Period:</strong>
-              {{ formatDate(flight.operatingPeriod.startDate) }} -
-              {{ formatDate(flight.operatingPeriod.endDate) }}
-            </p>
-            <p>
-              <strong class="text-white">Base Price:</strong> ${{
-                flight.basePrice.toFixed(2)
-              }}
-            </p>
-          </div>
+      <div
+        v-else
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
+        <div
+          v-for="flight in activeFlights"
+          :key="flight._id"
+          class="bg-zinc-800 p-6 rounded-xl shadow-inner border border-[#ff7f50] flex flex-col justify-between"
+        >
+          <div class="flex flex-col justify-between h-full">
+            <!-- Flight Info Section -->
+            <div
+              class="flex items-center justify-between border-b border-[#ff7f50] pb-2 mb-3"
+            >
+              <p class="text-lg font-bold text-white">
+                ✈️ {{ flight.flightNumber }}
+              </p>
+            </div>
 
-          <!-- Action Button -->
-          <button
-            class="bg-[#ff7f50] text-white mt-6 py-2 rounded-lg text-sm font-medium hover:bg-[#e76e3c]"
-            @click="$emit('select-flight', flight)"
-          >
-            Book Flight
-          </button>
+            <!-- Flight Details -->
+            <div class="space-y-2 text-gray-300 text-sm">
+              <p>
+                <strong class="text-white">From:</strong>
+                {{
+                  airportNameMap[flight.route.departureAirport_id] ||
+                  flight.route.departureAirport_id
+                }}
+              </p>
+              <p>
+                <strong class="text-white">To:</strong>
+                {{
+                  airportNameMap[flight.route.arrivalAirport_id] ||
+                  flight.route.arrivalAirport_id
+                }}
+              </p>
+              <p>
+                <strong class="text-white">Departure Date:</strong>
+                {{ flight.departureDay }}
+              </p>
+              <p>
+                <strong class="text-white">Departure Time:</strong>
+                {{ flight.departureTime }}
+              </p>
+              <p>
+                <strong class="text-white">Arrival Time:</strong>
+                {{ flight.arrivalTime }}
+              </p>
+              <p>
+                <strong class="text-white">Duration:</strong>
+                {{ flight.route.duration }}
+              </p>
+              <p>
+                <strong class="text-white">Operating Period:</strong>
+                {{ formatDate(flight.operatingPeriod.startDate) }} -
+                {{ formatDate(flight.operatingPeriod.endDate) }}
+              </p>
+              <p>
+                <strong class="text-white">Base Price:</strong> ${{
+                  flight.basePrice.toFixed(2)
+                }}
+              </p>
+            </div>
+
+            <!-- Action Button -->
+            <button
+              class="bg-[#ff7f50] text-white mt-6 py-2 rounded-lg text-sm font-medium hover:bg-[#e76e3c]"
+              @click="$emit('select-flight', flight)"
+            >
+              Book Flight
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -99,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import type { Flight } from "../../interfaces/interfaces";
 import { useAirports } from "../../modules/useAirports";
 import { formatDate } from "../../modules/functions/dateFormater";
@@ -110,7 +119,7 @@ onMounted(() => {
   fetchAirports();
 });
 
-defineProps<{
+const props = defineProps<{
   flights: Flight[];
   loading: boolean;
   error: string | null;
@@ -119,4 +128,15 @@ defineProps<{
 const emit = defineEmits<{
   (e: "select-flight", flight: Flight): void;
 }>();
+
+const today = new Date();
+
+// Only include flights that are currently within their operating period
+const activeFlights = computed(() =>
+  props.flights.filter((flight) => {
+    const start = new Date(flight.operatingPeriod.startDate);
+    const end = new Date(flight.operatingPeriod.endDate);
+    return start <= today && today <= end;
+  })
+);
 </script>

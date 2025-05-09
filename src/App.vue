@@ -24,6 +24,9 @@
           <RouterLink v-if="isAdmin" to="/admin_bookings" class="nav-item">
             Bookings
           </RouterLink>
+          <RouterLink v-if="isAdmin" to="/admin_booked_seats" class="nav-item">
+            Booked Seats
+          </RouterLink>
           <RouterLink v-if="isAdmin" to="/admin_aboutCompany" class="nav-item">
             About
           </RouterLink>
