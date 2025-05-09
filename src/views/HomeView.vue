@@ -23,7 +23,7 @@
       </div>
 
       <!-- Booking Form -->
-      <div class="space-y-6 text-left">
+      <div class="space-y-6 text-left" ref="flightSelectRef">
         <FlightSelect
           v-model:departureAirport="departureAirport"
           v-model:arrivalAirport="arrivalAirport"
@@ -63,7 +63,12 @@
       </div>
     </header>
     <CompanyCartInfo v-model="aboutCompanySanitized" />
-    <FlightCards :flights="flights" :loading="flightLoading" :error="error" />
+    <FlightCards
+      :flights="flights"
+      :loading="flightLoading"
+      :error="error"
+      @select-flight="handleFlightSelection"
+    />
   </div>
 </template>
 
@@ -73,6 +78,7 @@ import { useCompany } from "../modules/useCompany";
 import CompanyCartInfo from "../components/home/CompanyInfoCard.vue";
 import FlightCards from "../components/home/FlightCard.vue";
 import { useRouter } from "vue-router";
+import type { Flight } from "../interfaces/interfaces";
 
 const router = useRouter();
 
@@ -113,6 +119,22 @@ watchEffect(() => {
     companyData.value = { ...aboutCompany.value };
   }
 });
+import { nextTick } from "vue";
+
+// Reference to the FlightSelect section
+const flightSelectRef = ref<HTMLElement | null>(null);
+
+// Scroll + pre-fill logic
+const handleFlightSelection = async (flight: Flight) => {
+  // Pre-fill flight selection
+  departureAirport.value = flight.route.departureAirport_id;
+  arrivalAirport.value = flight.route.arrivalAirport_id;
+  selectedFlight.value = flight._id;
+
+  // Scroll to FlightSelect section
+  await nextTick(); // wait for DOM updates
+  flightSelectRef.value?.scrollIntoView({ behavior: "smooth" });
+};
 
 // State
 const departureAirport = ref<string | null>(null); // Corrected type

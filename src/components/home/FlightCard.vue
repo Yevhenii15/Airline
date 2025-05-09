@@ -88,8 +88,9 @@
           <!-- Action Button -->
           <button
             class="bg-[#ff7f50] text-white mt-6 py-2 rounded-lg text-sm font-medium hover:bg-[#e76e3c]"
+            @click="$emit('select-flight', flight)"
           >
-            See Flights
+            Book Flight
           </button>
         </div>
       </div>
@@ -113,5 +114,9 @@ defineProps<{
   flights: Flight[];
   loading: boolean;
   error: string | null;
+}>();
+
+const emit = defineEmits<{
+  (e: "select-flight", flight: Flight): void;
 }>();
 </script>

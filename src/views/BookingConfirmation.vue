@@ -1,6 +1,6 @@
 <template>
   <div
-    class="max-w-4xl mx-auto p-8 bg-white text-gray-800 shadow-2xl rounded-2xl"
+    class="max-w-4xl mx-auto my-10 p-8 bg-black border border-[#ff7f50] text-gray-800 shadow-2xl rounded-2xl"
   >
     <!-- Title -->
     <h2 class="text-4xl font-bold text-green-600 mb-8 text-center">
@@ -36,9 +36,6 @@
 
       <!-- Passenger Details -->
       <div v-if="booking!.tickets.length" class="space-y-6 mb-8">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4">
-          Passenger Information
-        </h3>
         <TicketList :tickets="booking!.tickets" />
       </div>
 

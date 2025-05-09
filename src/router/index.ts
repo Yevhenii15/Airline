@@ -116,5 +116,20 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
+watch(
+  () => [state.isLoggedIn, state.isAdmin],
+  ([isLoggedIn, isAdmin]) => {
+    const currentRoute = router.currentRoute.value;
+
+    const requiresAuth = currentRoute.meta.requiresAuth;
+    const requiresAdmin = currentRoute.meta.requiresAdmin;
+
+    if (requiresAdmin && (!isLoggedIn || !isAdmin)) {
+      router.push("/auth");
+    } else if (requiresAuth && !isLoggedIn) {
+      router.push("/auth");
+    }
+  }
+);
 
 export default router;
