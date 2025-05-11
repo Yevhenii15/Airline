@@ -62,6 +62,7 @@ export interface AboutCompany {
   email: string;
 }
 export interface Ticket {
+  _id?: string;
   ticket_id?: string;
   firstName: string;
   lastName: string;
@@ -70,6 +71,7 @@ export interface Ticket {
   seatNumber: string;
   flight_id: string;
   departureDate: string;
+  isCheckedIn?: boolean;
 }
 
 export interface Booking {

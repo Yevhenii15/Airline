@@ -36,6 +36,22 @@ const router = createRouter({
       },
     },
     {
+      path: "/checkin",
+      name: "checkin",
+      component: () => import("../views/CheckInView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/tickets",
+      name: "tickets",
+      component: () => import("../views/TicketView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/auth",
       name: "auth",
       component: () => import("../views/admin/AuthView.vue"),

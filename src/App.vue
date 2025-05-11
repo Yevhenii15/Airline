@@ -9,26 +9,14 @@
           <RouterLink v-if="isLoggedIn" to="/profile" class="nav-item">
             Profile
           </RouterLink>
+          <RouterLink v-if="isLoggedIn" to="/tickets" class="nav-item">
+            Tickets
+          </RouterLink>
+          <RouterLink v-if="isLoggedIn" to="/checkin" class="nav-item">
+            Check In
+          </RouterLink>
           <RouterLink v-if="isAdmin" to="/admin" class="nav-item">
             Admin Panel
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_airports" class="nav-item">
-            Airports
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_routes" class="nav-item">
-            Routes
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_flights" class="nav-item">
-            Flights
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_bookings" class="nav-item">
-            Bookings
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_booked_seats" class="nav-item">
-            Booked Seats
-          </RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin_aboutCompany" class="nav-item">
-            About
           </RouterLink>
           <button v-if="isLoggedIn" @click="logout" class="nav-button">
             LogOut
