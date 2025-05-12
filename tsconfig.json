@@ -6,10 +6,17 @@
     },
     {
       "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.tests.json"
     }
   ],
   "compilerOptions": {
-    "types": ["vite/client", "./src/types/vue-cal"],
+    "types": [
+      "vitest/globals",
+      "vite/client",
+      "./src/types/vue-cal"
+    ],
     "moduleResolution": "node",
     "allowJs": true,
     "noImplicitAny": false

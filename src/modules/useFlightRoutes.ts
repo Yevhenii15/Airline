@@ -40,6 +40,7 @@ export const useFlightRoutes = () => {
       await fetchRoutes();
     } catch (err) {
       console.error("Error in addRoute:", (err as Error).message);
+      error.value = (err as Error).message || 'Failed to add route'; // Ensure error message is set
     }
   };
 
