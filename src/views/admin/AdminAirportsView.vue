@@ -59,7 +59,7 @@
       </h3>
       <ul class="space-y-2">
         <li
-          v-for="airport in airports"
+          v-for="airport in sortedAirports"
           :key="airport._id"
           class="border border-gray-600 p-3 rounded-lg bg-[#2b2b2b] shadow flex justify-between items-center"
         >
@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useAirports } from "../../modules/useAirports";
 
 const {
@@ -97,6 +97,10 @@ const {
   deleteAirport,
 } = useAirports();
 const airportCode = ref("");
+
+const sortedAirports = computed(() => {
+  return [...airports.value].reverse();
+});
 
 onMounted(() => {
   fetchAirports();

@@ -30,11 +30,12 @@
       @reset-flight="resetNewFlight"
     />
 
-    <!-- Flights List -->
     <FlightList
       :flights="flights"
       :routes="routes"
+      :airport-name-map="airportNameMap"
       @delete-flight="deleteFlight"
+      @update-flight="handleFlightUpdate"
     />
   </div>
 </template>
@@ -43,9 +44,10 @@
 import { ref, onMounted } from "vue";
 import { useFlights } from "../../modules/useFlights";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
-import AddFlightForm from "../../components/flight/AddFlightForm.vue"; // Import the new component
-import FlightList from "../../components/flight/FlightList.vue"; // Import FlightList component
-import type { NewFlight } from "../../interfaces/interfaces";
+import { useAirports } from "../../modules/useAirports";
+import AddFlightForm from "../../components/flight/AddFlightForm.vue";
+import FlightList from "../../components/flight/FlightList.vue";
+import type { NewFlight, Flight } from "../../interfaces/interfaces";
 
 const {
   flights,
@@ -54,13 +56,17 @@ const {
   fetchFlights,
   deleteFlight,
   addFlight,
+  updateFlight,
 } = useFlights();
+
 const {
   routes,
   fetchRoutes,
   error: routeError,
   loading: routeLoading,
 } = useFlightRoutes();
+
+const { fetchAirports, airportNameMap } = useAirports();
 
 const newFlightData = ref<NewFlight>({
   flightNumber: "",
@@ -78,12 +84,10 @@ const newFlightData = ref<NewFlight>({
   seatMap: [],
   seats: [],
   basePrice: 0,
-  operatingPeriod: {
-    startDate: "",
-    endDate: "",
-  },
+  operatingPeriod: { startDate: "", endDate: "" },
   isReturnFlightRequired: false,
 });
+
 const resetNewFlight = () => {
   newFlightData.value = {
     flightNumber: "",
@@ -101,21 +105,24 @@ const resetNewFlight = () => {
     seatMap: [],
     seats: [],
     basePrice: 0,
-    operatingPeriod: {
-      startDate: "",
-      endDate: "",
-    },
+    operatingPeriod: { startDate: "", endDate: "" },
     isReturnFlightRequired: false,
   };
 };
-
-onMounted(() => {
-  fetchRoutes();
-  fetchFlights();
-});
 
 const addFlightHandler = async (newFlight: NewFlight) => {
   await addFlight(newFlight);
   await fetchFlights();
 };
+
+const handleFlightUpdate = async (updatedFlight: Flight) => {
+  await updateFlight(updatedFlight._id, updatedFlight);
+  await fetchFlights();
+};
+
+onMounted(() => {
+  fetchRoutes();
+  fetchFlights();
+  fetchAirports();
+});
 </script>

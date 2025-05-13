@@ -46,7 +46,7 @@
       </h2>
 
       <RouteItem
-        v-for="route in routes"
+        v-for="route in sortedRoutes"
         :key="route._id"
         :route="route"
         :airports="airports"
@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
 import { useAirports } from "../../modules/useAirports";
 import type {
@@ -86,6 +86,10 @@ const {
   loading: loadingAirports,
   error: airportError,
 } = useAirports();
+
+const sortedRoutes = computed(() => {
+  return [...routes.value].reverse(); // assuming routes is a ref
+});
 
 onMounted(() => {
   fetchAirports();
