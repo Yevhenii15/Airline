@@ -1,42 +1,49 @@
 <template>
-  <h1 class="p-4 max-w-4xl text-center mt-4 mx-auto text-2xl font-bold">
-    Your Tickets
-  </h1>
+  <div class="p-4 max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Your Check-In Tickets</h1>
 
-  <div class="p-4 max-w-4xl mx-auto flex flex-wrap">
-    <div v-if="tickets.length === 0">No tickets available.</div>
+    <div v-if="loading" class="text-center">Loading your tickets...</div>
+    <div v-if="tickets.length === 0" class="text-center">
+      You have no tickets yet.
+    </div>
 
-    <div
-      v-for="(ticket, index) in tickets"
-      :key="ticket.ticketId"
-      class="mb-6 p-4 w-[50%] rounded-lg shadow"
-    >
-      <div class="" v-html="ticket.ticketHtml"></div>
+    <div class="flex flex-wrap" v-if="tickets.length > 0">
+      <div
+        v-for="(ticket, index) in tickets"
+        :key="ticket._id"
+        class="mb-4 p-4 w-[45%] rounded-lg shadow"
+      >
+        <!-- Render ticketHtml as raw HTML -->
+        <div v-html="ticket.ticketHtml"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useCheckIn } from "../modules/useCheckIn";
+import { useUsers } from "../modules/auth/useUsers";
 
-interface Ticket {
-  ticketId: string;
-  ticketHtml: string;
-  passengerName: string;
-}
+const { getTokenAndUserId } = useUsers();
+const { fetchSavedTickets } = useCheckIn();
 
-const tickets = ref<Ticket[]>([]);
+const tickets = ref<any[]>([]);
+const loading = ref(true);
 
-const fetchTickets = () => {
-  const userId = localStorage.getItem("userId");
-  const savedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
-
-  tickets.value = savedTickets.filter(
-    (ticket: any) => ticket.userId === userId
-  );
-};
-
-onMounted(() => {
-  fetchTickets();
+onMounted(async () => {
+  try {
+    const userId = getTokenAndUserId().userId; // Get the logged-in user's ID
+    const savedTickets = await fetchSavedTickets(userId); // Fetch saved tickets
+    tickets.value = savedTickets; // Store the tickets
+  } catch (error) {
+    console.error("❌ Failed to fetch tickets:", error);
+  } finally {
+    loading.value = false; // End loading state
+  }
 });
 </script>
+
+<style scoped>
+/* Add styles to match your theme or design system */
+</style>

@@ -66,12 +66,16 @@ onMounted(async () => {
   const results = await Promise.all(
     props.availableBookings.map(async (booking) => {
       const flightId = booking.tickets[0]?.flight_id;
-      let flight;
+      let flight = null;
 
       try {
         flight = await fetchFlightById(flightId);
       } catch (e) {
         console.error("Failed to fetch flight:", flightId, e);
+      }
+
+      // Handle the case where flight is null
+      if (!flight) {
         return {
           ...booking,
           flightNumber: "Unknown",

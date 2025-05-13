@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import { state } from "../modules/globalStates/state";
 import { watch } from "vue";
+import { useUsers } from "../modules/auth/useUsers";
+
+const { getTokenAndUserId } = useUsers();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -128,24 +131,39 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some((record) => record.meta.requiresAdmin);
 
-  // 🔹 Prevent normal users from accessing admin routes
+  try {
+    if (requiresAuth) {
+      getTokenAndUserId(); // Will throw if expired or missing
+    }
+  } catch (err: any) {
+    if (err.message === "SESSION_EXPIRED") {
+      state.isLoggedIn = false;
+      state.isAdmin = false;
+      localStorage.clear();
+      alert("Session expired. Please log in again.");
+      return next("/auth");
+    } else if (err.message === "AUTH_REQUIRED") {
+      return next("/auth");
+    } else {
+      // Unexpected error fallback
+      console.error("Unknown auth error:", err.message);
+      return next("/auth");
+    }
+  }
+
   if (requiresAdmin && (!isAuthenticated || !isAdmin)) {
     next("/auth");
-  }
-  // 🔹 Prevent guests from accessing authenticated routes
-  else if (requiresAuth && !isAuthenticated) {
+  } else if (requiresAuth && !isAuthenticated) {
     next("/auth");
-  }
-  // ✅ Allow access
-  else {
+  } else {
     next();
   }
 });
+
 watch(
   () => [state.isLoggedIn, state.isAdmin],
   ([isLoggedIn, isAdmin]) => {
     const currentRoute = router.currentRoute.value;
-
     const requiresAuth = currentRoute.meta.requiresAuth;
     const requiresAdmin = currentRoute.meta.requiresAdmin;
 

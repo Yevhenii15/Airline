@@ -1,4 +1,3 @@
-// composables/useCheckIn.ts
 import { ref, onMounted } from "vue";
 import { makeRequest } from "./functions/makeRequest";
 import { useUsers } from "../modules/auth/useUsers"; // for token
@@ -142,21 +141,51 @@ export const useCheckIn = () => {
     });
   };
 
-  const saveTicket = (
+  // Function to send ticket to the backend and update
+  const saveTicket = async (
     ticketHtml: string,
     expirationDate: string,
-    passengerName: string
+    passengerName: string,
+    ticketId: string
   ) => {
-    const userId = localStorage.getItem("userId"); // Or from Pinia/auth module
-    const existing = JSON.parse(localStorage.getItem("tickets") || "[]");
+    const { getTokenAndUserId } = useUsers();
+    const userId = getTokenAndUserId().userId;
     const newTicket = {
-      ticketId: generateUniqueTicketId(),
+      ticketId, // Use the ticket ID from the backend
       ticketHtml,
       passengerName,
       expirationDate,
       userId, // Add this
     };
-    localStorage.setItem("tickets", JSON.stringify([...existing, newTicket]));
+
+    try {
+      // Send the ticket to the backend to update the ticket information
+      await makeRequest(
+        `/tickets/${ticketId}`, // Update ticket route
+        "PUT",
+        newTicket,
+        true // Include token for authentication
+      );
+      console.log("Ticket updated successfully:", newTicket);
+    } catch (error) {
+      console.error("Failed to update ticket:", error);
+    }
+  };
+
+  const fetchSavedTickets = async (userId: string) => {
+    try {
+      const data = await makeRequest(
+        `/tickets/${userId}`,
+        "GET",
+        undefined,
+        true
+      );
+      console.log("✅ Tickets fetched correctly:", data); // This should be the array
+      return data; // ✅ Return data directly, not data.data
+    } catch (err) {
+      console.error("❌ Error fetching saved tickets:", err);
+      return [];
+    }
   };
 
   // Function to generate a unique ticket ID (you can adjust this as needed)
@@ -166,11 +195,13 @@ export const useCheckIn = () => {
 
   return {
     checkIn,
+    generateTicketHTML,
+    saveTicket,
+    downloadTickets,
+    fetchSavedTickets,
+    generateUniqueTicketId,
     loading,
     error,
     success,
-    generateTicketHTML,
-    downloadTickets,
-    saveTicket,
   };
 };

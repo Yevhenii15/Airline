@@ -1,8 +1,9 @@
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import type { User } from "@/interfaces/interfaces";
 import { state } from "../globalStates/state";
 import { jwtDecode } from "jwt-decode";
-import { makeRequest } from "../functions/makeRequest"; // ✅ Import reusable request function
+import { makeRequest } from "../functions/makeRequest";
 
 export const useUsers = () => {
   const token = ref<string | null>(null);
@@ -29,8 +30,11 @@ export const useUsers = () => {
       loading.value = false;
     }
   };
-  // 🌟 Fetch Token (Login)
-  const fetchToken = async (email: string, password: string): Promise<void> => {
+  const fetchToken = async (
+    email: string,
+    password: string,
+    router: ReturnType<typeof useRouter> // Pass the router as an argument
+  ): Promise<void> => {
     try {
       const authResponse = await makeRequest("/user/login", "POST", {
         email,
@@ -44,6 +48,13 @@ export const useUsers = () => {
       console.log("User logged in successfully:", authResponse);
 
       alert("Logged in successfully!");
+
+      // Redirect to the dashboard or home page after successful login
+      if (user.value?.isAdmin) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       error.value = (err as Error).message;
       console.error("Login failed:", error.value);
@@ -52,13 +63,14 @@ export const useUsers = () => {
     }
   };
 
-  // 🌟 Register User
   const registerUser = async (
     name: string,
     email: string,
     phone: string,
     password: string,
-    dateOfBirth: Date
+    dateOfBirth: Date,
+    isAdmin: boolean,
+    router: ReturnType<typeof useRouter> // Accept router as an argument
   ): Promise<void> => {
     try {
       const authResponse = await makeRequest("/user/register", "POST", {
@@ -67,16 +79,27 @@ export const useUsers = () => {
         phone,
         password,
         dateOfBirth,
+        isAdmin,
       });
 
-      token.value = authResponse.data.token;
-      user.value = authResponse.data.user;
+      // Check if the user data and isAdmin exist in the response
+      if (
+        !authResponse.data ||
+        typeof authResponse.data.isAdmin === "undefined"
+      ) {
+        throw new Error(
+          "User registration failed. Missing user data or isAdmin property."
+        );
+      }
 
-      updateAuthState(authResponse.data.token, authResponse.data.user);
+      token.value = authResponse.data.token;
+      user.value = authResponse.data; // directly use authResponse.data here
+
+      updateAuthState(authResponse.data.token, authResponse.data);
       console.log("User registered successfully:", authResponse);
 
       // Attempt to log the user in immediately after registration
-      await fetchToken(email, password); // Log in the user automatically
+      await fetchToken(email, password, router); // Pass router here
       alert("Registered and logged in successfully!");
     } catch (err) {
       error.value = (err as Error).message;
@@ -84,6 +107,7 @@ export const useUsers = () => {
       alert(`Registration failed: ${error.value}`);
     }
   };
+
   // 🌟 Update User Profile
   const updateUserProfile = async (data: {
     name: string;
@@ -132,34 +156,36 @@ export const useUsers = () => {
   const getTokenAndUserId = (): {
     token: string;
     userId: string;
-    email: string; // Include email in the return type
+    email: string;
     isAdmin: boolean;
   } => {
     const token = localStorage.getItem("lsToken") || "";
     const userId = localStorage.getItem("userIDToken") || "";
     const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-    if (!token || !userId) throw new Error("Authentication required");
+    if (!token || !userId) throw new Error("AUTH_REQUIRED");
 
-    // Decode and check token expiration
     try {
       const decodedToken: any = jwtDecode(token);
       if (decodedToken.exp < Math.floor(Date.now() / 1000)) {
-        throw new Error("Session expired, please log in again");
+        throw new Error("SESSION_EXPIRED");
       }
 
-      // Return the email along with userId and other data
       return {
         token,
         userId,
-        email: decodedToken.email, // Assuming email is stored in the token
+        email: decodedToken.email,
         isAdmin,
       };
     } catch (err) {
       console.error("Invalid token:", err);
-      throw new Error("Invalid token, please log in again");
+      if ((err as Error).message === "SESSION_EXPIRED") {
+        throw new Error("SESSION_EXPIRED");
+      }
+      throw new Error("INVALID_TOKEN");
     }
   };
+
   // 🌟 Helper: Update Authentication State
   const updateAuthState = (newToken: string, userData: User) => {
     token.value = newToken;

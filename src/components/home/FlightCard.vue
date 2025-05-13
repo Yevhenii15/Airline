@@ -134,9 +134,8 @@ const today = new Date();
 // Only include flights that are currently within their operating period
 const activeFlights = computed(() =>
   props.flights.filter((flight) => {
-    const start = new Date(flight.operatingPeriod.startDate);
     const end = new Date(flight.operatingPeriod.endDate);
-    return start <= today && today <= end;
+    return today <= end;
   })
 );
 </script>

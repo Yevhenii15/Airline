@@ -97,6 +97,9 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits } from "vue";
 import { useUsers } from "@/modules/auth/useUsers";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const props = defineProps({
   isVisible: Boolean,
@@ -119,14 +122,13 @@ const toggleForm = () => {
 
 const handleLogin = async () => {
   try {
-    await fetchToken(email.value, password.value);
+    await fetchToken(email.value, password.value, router); // Pass router here
     resetInputs(); // Reset inputs after login
     closePopup();
   } catch (error) {
     alert("Login failed. Please try again.");
   }
 };
-
 const handleRegister = async () => {
   try {
     await registerUser(
@@ -134,7 +136,9 @@ const handleRegister = async () => {
       email.value,
       phone.value,
       password.value,
-      new Date(dateOfBirth.value)
+      new Date(dateOfBirth.value),
+      false, // isAdmin value, set it to false for regular users
+      router // Pass the router directly from setup()
     );
     resetInputs(); // Reset inputs after registration
     closePopup();

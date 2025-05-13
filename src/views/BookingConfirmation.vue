@@ -71,7 +71,7 @@ import TicketList from "@/components/booking/details/TicketList.vue";
 const { fetchFlightById, error, loading } = useFlights();
 
 const booking = ref<Booking | null>(null);
-const flightsById = ref<Record<string, Flight>>({});
+const flightsById = ref<Record<string, Flight | null>>({}); // Handle null values explicitly
 
 onMounted(async () => {
   const stored = localStorage.getItem("latestBooking");
@@ -94,6 +94,7 @@ onMounted(async () => {
         flightsById.value[id] = await fetchFlightById(id);
       } catch (e) {
         console.error("Failed to fetch flight", id, e);
+        flightsById.value[id] = null; // Set to null if there's an error
       }
     })
   );

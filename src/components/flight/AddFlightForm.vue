@@ -87,10 +87,12 @@
     </form>
   </div>
 </template>
-
 <script setup lang="ts">
-import { defineModel, defineProps, defineEmits } from "vue";
+import { onMounted } from "vue";
 import type { NewFlight } from "../../interfaces/interfaces";
+import { useAirports } from "../../modules/useAirports";
+
+const { fetchAirports, airportNameMap } = useAirports();
 
 const newFlight = defineModel<NewFlight>({ required: true });
 
@@ -102,8 +104,47 @@ const { routes } = defineProps<{
 const emit = defineEmits(["add-flight", "reset-flight"]);
 
 const addFlightHandler = () => {
+  const today = new Date();
+  const startDate = new Date(newFlight.value.operatingPeriod.startDate);
+  const endDate = new Date(newFlight.value.operatingPeriod.endDate);
+
+  // Validate route selection
   if (!newFlight.value.route._id) {
     alert("Please select a valid route.");
+    return;
+  }
+
+  // Validate start date
+  if (startDate < today) {
+    alert("Start date cannot be in the past.");
+    return;
+  }
+
+  // Validate end date
+  if (endDate < startDate) {
+    alert("End date cannot be before the start date.");
+    return;
+  }
+
+  // Validate departure day (should be a valid day of the week)
+  const validDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  if (!validDays.includes(newFlight.value.departureDay)) {
+    alert("Please enter a valid departure day (Monday to Sunday).");
+    return;
+  }
+
+  // Validate departure time (HH:MM format)
+  const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Matches 00:00 to 23:59
+  if (!timeFormatRegex.test(newFlight.value.departureTime)) {
+    alert("Please enter a valid departure time in the format HH:MM.");
     return;
   }
 
@@ -114,5 +155,11 @@ const addFlightHandler = () => {
 
 // Helper function
 const getRouteName = (route: any) =>
-  `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
+  `${airportNameMap.value[route.departureAirport_id]} → ${
+    airportNameMap.value[route.arrivalAirport_id]
+  }`;
+
+onMounted(() => {
+  fetchAirports();
+});
 </script>

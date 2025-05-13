@@ -143,14 +143,15 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useFlights } from "../../modules/useFlights";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
 import type { Flight } from "../../interfaces/interfaces";
 import { formatDate } from "../../modules/functions/dateFormater";
+import { useAirports } from "../../modules/useAirports";
 
+const { fetchAirports, airportNameMap } = useAirports();
 const { flights, fetchFlights, deleteFlight, updateFlight } = useFlights();
 const { routes, fetchRoutes } = useFlightRoutes();
 
@@ -176,23 +177,18 @@ const saveUpdatedFlight = async () => {
   editableFlight.value = null;
   alert("Flight updated successfully!");
 
-  // Refresh flights list
+  // Refresh flights list after update
   await fetchFlights();
 };
 
-const getRouteName = (route: any) => {
-  if (!route || !route._id) return "Unknown Route";
-  return `${route.departureAirport_id} → ${route.arrivalAirport_id}`;
-};
+const getRouteName = (route: any) =>
+  `${airportNameMap.value[route.departureAirport_id]} → ${
+    airportNameMap.value[route.arrivalAirport_id]
+  }`;
 
 onMounted(() => {
   fetchRoutes();
   fetchFlights();
-});
-
-watch(flights, async (newFlights) => {
-  if (newFlights.length > 0) {
-    await fetchFlights();
-  }
+  fetchAirports();
 });
 </script>

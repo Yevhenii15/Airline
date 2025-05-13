@@ -1,8 +1,10 @@
 import { ref } from "vue";
 import type { flightRoute, NewFlightRoute } from "../interfaces/interfaces";
 import { useUsers } from "./auth/useUsers";
+import { useFlights } from "./useFlights";
 import { makeRequest } from "./functions/makeRequest";
 
+const { flights, fetchFlights } = useFlights();
 const { getTokenAndUserId } = useUsers();
 
 export const useFlightRoutes = () => {
@@ -40,7 +42,7 @@ export const useFlightRoutes = () => {
       await fetchRoutes();
     } catch (err) {
       console.error("Error in addRoute:", (err as Error).message);
-      error.value = (err as Error).message || 'Failed to add route'; // Ensure error message is set
+      error.value = (err as Error).message || "Failed to add route"; // Ensure error message is set
     }
   };
 
@@ -53,6 +55,21 @@ export const useFlightRoutes = () => {
 
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
+
+      // Ensure flights are loaded
+      if (flights.value.length === 0) {
+        await fetchFlights();
+      }
+
+      // Check if the route is used in any flight
+      const usedInFlights = flights.value.some(
+        (flight) => flight.route?._id === _id
+      );
+
+      if (usedInFlights) {
+        alert("❌ Cannot delete route: It is used in one or more flights.");
+        return;
+      }
 
       await makeRequest(`/routes/${_id}`, "DELETE", undefined, true);
 

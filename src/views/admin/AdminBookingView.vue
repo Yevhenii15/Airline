@@ -57,14 +57,22 @@
         <!-- 2. Info -->
         <BookingInfo :booking="booking" :formatDate="formatDate" />
 
-        <!-- 3. Flight Details -->
+        <!-- Flight Details Section -->
         <div v-if="flightLoading" class="text-blue-500 mb-4">
           Loading flight details...
         </div>
         <div v-if="flightError" class="text-red-600 mb-4">
           {{ flightError }}
         </div>
+        <!-- Check if flight is missing and show message -->
+        <div v-if="!flightError && !flightsById[booking.tickets[0].flight_id]">
+          <p class="text-red-600">
+            This flight was deleted by the company or does not exist.
+          </p>
+        </div>
+        <!-- Render FlightDetails if flight data exists -->
         <FlightDetails
+          v-else
           :ticket="booking.tickets[0]"
           :flight="flightsById[booking.tickets[0].flight_id]"
           :formatDate="formatDate"
@@ -76,7 +84,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useBookings } from "../../modules/useBookings";
@@ -128,9 +135,14 @@ async function loadFlightsFor(list: Booking[]) {
   for (const id of ids) {
     if (!flightsById.value[id]) {
       try {
-        flightsById.value[id] = await fetchFlightById(id);
+        const flight = await fetchFlightById(id);
+        if (flight) {
+          flightsById.value[id] = flight;
+        } else {
+          flightsById.value[id] = null; // Flight is missing or deleted
+        }
       } catch {
-        /* ignore */
+        flightsById.value[id] = null; // Handle error case (deleted or missing flight)
       }
     }
   }

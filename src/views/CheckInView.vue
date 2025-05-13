@@ -90,13 +90,15 @@
             <h3 class="text-lg text-center font-semibold mb-2">
               Generated Tickets
             </h3>
-            <div
-              v-for="(ticketHtml, index) in generatedTickets"
-              :key="index"
-              v-html="ticketHtml"
-              class="flex justify-center"
-            ></div>
-            <div class="flex justify-center mt-4 gap-4">
+            <div class="flex flex-wrap justify-center gap-4">
+              <div
+                v-for="(ticketHtml, index) in generatedTickets"
+                :key="index"
+                v-html="ticketHtml"
+                class="w-[45%]"
+              ></div>
+            </div>
+            <div class="flex justify-center mt-4 gap-4 w-100%">
               <button
                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 @click="() => downloadTickets(generatedTickets)"
@@ -140,6 +142,7 @@ onMounted(() => {
 const { bookings, loading, fetchUserBookings } = useBookings();
 const { checkIn, generateTicketHTML, downloadTickets, saveTicket } =
   useCheckIn();
+
 const selectedBookingId = ref<string>("");
 const selectedBooking = ref<Booking | null>(null);
 const checkInData = reactive<
@@ -195,12 +198,12 @@ const submitCheckIn = async () => {
 
   try {
     const validTickets = selectedBooking.value.tickets.filter(
-      (ticket) => ticket._id
+      (ticket) => ticket._id // Ensure we're using the correct ticket ID
     );
 
     const ticketFlightPairs = await Promise.all(
       validTickets.map(async (ticket) => {
-        const ticketId = getTicketId(ticket);
+        const ticketId = getTicketId(ticket); // Ensure this returns the correct ticket ID
         const passengerData = checkInData[ticketId];
         const flight = await fetchFlightById(ticket.flight_id);
 
@@ -237,10 +240,12 @@ const submitCheckIn = async () => {
       );
       generatedTickets.value.push(ticketHTML);
 
+      // Fix: Ensure the value is a string (fallback to empty string if undefined)
       saveTicket(
         ticketHTML,
-        passengerData.expirationDate,
-        `${ticket.firstName} ${ticket.lastName}`
+        passengerData.expirationDate || "", // Ensure a string is passed here
+        `${ticket.firstName} ${ticket.lastName}`,
+        ticket._id || "" // Ensure a string is passed here
       );
     }
 

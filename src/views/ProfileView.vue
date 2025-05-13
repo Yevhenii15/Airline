@@ -86,7 +86,14 @@
           🔄 Loading flight details...
         </div>
         <div v-if="flightError" class="text-red-400">❗ {{ flightError }}</div>
+        <!-- Check if flight is missing -->
+        <div v-if="!flightFor(booking.tickets[0].flight_id)">
+          <p class="text-red-600">
+            This flight was deleted by the company or does not exist.
+          </p>
+        </div>
         <FlightDetails
+          v-else
           :ticket="booking.tickets[0]"
           :flight="flightFor(booking.tickets[0].flight_id)"
           :formatDate="formatDate"
@@ -141,7 +148,7 @@ const {
   error: userError,
 } = useUsers();
 
-const flightsById = ref<Record<string, Flight>>({});
+const flightsById = ref<Record<string, Flight | null>>({});
 const activeTab = ref<"upcoming" | "past">("upcoming");
 
 // Load user bookings and flights on mount
@@ -182,9 +189,8 @@ const filteredBookings = computed(() =>
   activeTab.value === "upcoming" ? upcomingBookings.value : pastBookings.value
 );
 
-// Helper to look up a flight
 function flightFor(flightId: string): Flight | undefined {
-  return flightsById.value[flightId];
+  return flightsById.value[flightId] ?? undefined; // Return undefined if the flight is not found
 }
 
 // Cancel one of the user’s bookings
