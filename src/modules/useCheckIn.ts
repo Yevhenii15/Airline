@@ -8,9 +8,11 @@ export const useCheckIn = () => {
   onMounted(() => {
     fetchAirports();
   });
+
   const loading = ref(false);
   const error = ref<string | null>(null);
   const success = ref<boolean>(false);
+  const generatedTickets = ref<string[]>([]);
 
   const { getTokenAndUserId } = useUsers();
 
@@ -47,7 +49,8 @@ export const useCheckIn = () => {
     }
   };
 
-  const generateTicketHTML = (
+  // Function to generate ticket HTML data and return ticket object for backend
+  const generateTicketData = (
     ticket: any,
     passengerData: any,
     qrDataUrl: string,
@@ -71,89 +74,36 @@ export const useCheckIn = () => {
 
     const departureDate = new Date(ticket.departureDate).toLocaleDateString();
 
-    return `
-  <div style="w-[60%] font-family: Arial, sans-serif; color: #e5e7eb; background-color: #27272a; padding: 20px; width: 100%; max-width: 600px; border: 1px solid #ff7f50; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff7f50; padding-bottom: 20px; padding-top: 20px;">
-      <h1 style="margin: 0; font-size: 26px; color: #ff7f50; font-weight: bold;">FLYEAZY</h1>
-      <div style="text-align: right; display: flex;">
-        <div style="margin-right: 20px;">
-          <div style="font-size: 14px; color: #ff7f50;">DATE</div>
-          <div style="font-size: 18px;">${departureDate}</div>
-        </div>
-        <div>
-          <div style="font-size: 14px; color: #ff7f50;">FLY OUT</div>
-          <div style="font-size: 18px;">${flight.departureTime}</div>
-        </div>
-      </div>
-    </div>
+    const ticketData = {
+      departureDate,
+      departureAirportName,
+      arrivalAirportName,
+      departureIATA,
+      arrivalIATA,
+      firstName: ticket.firstName,
+      lastName: ticket.lastName,
+      seatNumber: ticket.seatNumber || "N/A",
+      flightNumber: flight.flightNumber,
+      flightStatus: flight.status,
+      departureTime: flight.departureTime,
+      qrDataUrl,
+    };
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px;">
-      <div style="text-align: center; width: 35%;">
-        <div style="font-size: 18px;">${departureAirportName}</div>
-        <div style="font-size: 40px; font-weight: bold; color: #ff7f50;">${departureIATA}</div>
-      </div>
-      <div style="font-size: 32px;">✈</div>
-      <div style="text-align: center; width: 35%;">
-        <div style="font-size: 18px;">${arrivalAirportName}</div>
-        <div style="font-size: 40px; font-weight: bold; color: #ff7f50;">${arrivalIATA}</div>
-      </div>
-    </div>
-
-    <div style="margin-top: 20px; padding-bottom: 20px; padding-top: 20px;">
-      <div style="font-size: 22px; color: #ff7f50; font-weight: normal;">PASSENGER</div>
-      <div style="font-size: 26px; font-weight: bold;">${ticket.firstName} ${
-      ticket.lastName
-    }</div>
-      <div style="display: flex;   justify-content: space-between; gap: 10px; padding-bottom: 20px; padding-top: 20px;">
-        <div>
-          <div style="font-size: 14px; color: #ff7f50;">FLIGHT #</div>
-          <div style="font-size: 18px;">${flight.flightNumber}</div>
-        </div>
-        <div>
-          <div style="font-size: 14px; color: #ff7f50;">SEAT</div>
-          <div style="font-size: 18px;">${ticket.seatNumber || "N/A"}</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 14px; color: #ff7f50;">STATUS</div>
-          <div style="font-size: 18px; font-weight: bold;">${
-            flight.status
-          }</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
-      <div style="background-color: #fff; display: inline-block; padding: 20px; width: 45%; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-        <img src="${qrDataUrl}" alt="QR Code" style="width: 80%; height: auto; margin: 0 auto; display: block;" />
-      </div>
-    </div>
-  </div>
-  `;
+    return ticketData; // Returns the ticket data object for saving to the backend
   };
 
-  const downloadTickets = (generatedTickets: string[]) => {
-    generatedTickets.forEach((ticketHtml, index) => {
-      const blob = new Blob([ticketHtml], { type: "text/html" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `ticket_${index + 1}.html`;
-      link.click();
-    });
-  };
-
-  // Function to send ticket to the backend and update
+  // Save ticket to the backend
   const saveTicket = async (
-    ticketHtml: string,
+    ticketData: any,
     expirationDate: string,
-    passengerName: string,
     ticketId: string
   ) => {
     const { getTokenAndUserId } = useUsers();
     const userId = getTokenAndUserId().userId;
+
     const newTicket = {
-      ticketId, // Use the ticket ID from the backend
-      ticketHtml,
-      passengerName,
+      ticketId,
+      ticketData,
       expirationDate,
       userId, // Add this
     };
@@ -172,6 +122,7 @@ export const useCheckIn = () => {
     }
   };
 
+  // Fetch saved tickets from the backend
   const fetchSavedTickets = async (userId: string) => {
     try {
       const data = await makeRequest(
@@ -188,14 +139,25 @@ export const useCheckIn = () => {
     }
   };
 
-  // Function to generate a unique ticket ID (you can adjust this as needed)
+  // Generate a unique ticket ID
   const generateUniqueTicketId = () => {
     return `ticket-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   };
 
+  // Download ticket HTML files
+  const downloadTickets = (generatedTickets: string[]) => {
+    generatedTickets.forEach((ticketHtml, index) => {
+      const blob = new Blob([ticketHtml], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `ticket_${index + 1}.html`;
+      link.click();
+    });
+  };
+
   return {
     checkIn,
-    generateTicketHTML,
+    generateTicketData,
     saveTicket,
     downloadTickets,
     fetchSavedTickets,
@@ -203,5 +165,6 @@ export const useCheckIn = () => {
     loading,
     error,
     success,
+    generatedTickets,
   };
 };

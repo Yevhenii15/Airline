@@ -86,25 +86,17 @@
             All passengers checked in successfully!
           </div>
 
-          <div v-if="generatedTickets.length" class="mt-6">
-            <h3 class="text-lg text-center font-semibold mb-2">
-              Generated Tickets
-            </h3>
-            <div class="flex flex-wrap justify-center gap-4">
-              <div
-                v-for="(ticketHtml, index) in generatedTickets"
-                :key="index"
-                v-html="ticketHtml"
-                class="w-[45%]"
-              ></div>
-            </div>
-            <div class="flex justify-center mt-4 gap-4 w-100%">
-              <button
-                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                @click="() => downloadTickets(generatedTickets)"
-              >
-                Download Tickets
-              </button>
+          <!-- Display the checked-in ticket details -->
+          <div v-if="checkedInTickets.length" class="mt-6">
+            <h2 class="text-xl font-semibold mb-2 text-white">
+              Checked-In Tickets
+            </h2>
+            <div class="flex flex-wrap gap-4">
+              <TicketDisplay
+                v-for="ticket in checkedInTickets"
+                :key="ticket._id"
+                :ticket="ticket"
+              />
             </div>
           </div>
         </div>
@@ -132,6 +124,7 @@ import { useCheckIn } from "../modules/useCheckIn";
 import { useAirports } from "../modules/useAirports";
 import type { Booking } from "../interfaces/interfaces";
 import BookingSelect from "../components/checkIn/BookingSelect.vue";
+import TicketDisplay from "../components/ticket/TicketDisplay.vue";
 import { useFlights } from "../modules/useFlights";
 import QRCode from "qrcode";
 
@@ -140,11 +133,11 @@ onMounted(() => {
   fetchAirports();
 });
 const { bookings, loading, fetchUserBookings } = useBookings();
-const { checkIn, generateTicketHTML, downloadTickets, saveTicket } =
-  useCheckIn();
+const { checkIn, saveTicket, generateTicketData } = useCheckIn();
 
 const selectedBookingId = ref<string>("");
 const selectedBooking = ref<Booking | null>(null);
+const checkedInTickets = ref<any[]>([]);
 const checkInData = reactive<
   Record<
     string,
@@ -161,7 +154,6 @@ const errors = reactive<
 >({});
 const submitting = ref(false);
 const success = ref(false);
-const generatedTickets = ref<string[]>([]);
 
 onMounted(async () => {
   await fetchUserBookings();
@@ -194,7 +186,6 @@ const submitCheckIn = async () => {
 
   submitting.value = true;
   success.value = false;
-  generatedTickets.value = [];
 
   try {
     const validTickets = selectedBooking.value.tickets.filter(
@@ -203,7 +194,7 @@ const submitCheckIn = async () => {
 
     const ticketFlightPairs = await Promise.all(
       validTickets.map(async (ticket) => {
-        const ticketId = getTicketId(ticket); // Ensure this returns the correct ticket ID
+        const ticketId = getTicketId(ticket);
         const passengerData = checkInData[ticketId];
         const flight = await fetchFlightById(ticket.flight_id);
 
@@ -232,21 +223,25 @@ const submitCheckIn = async () => {
 
       const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload));
 
-      const ticketHTML = generateTicketHTML(
-        ticket,
-        passengerData,
-        qrDataUrl,
-        flight
-      );
-      generatedTickets.value.push(ticketHTML);
+      // Include the departure date and check-in time in the ticket data
+      const ticketData = {
+        ...generateTicketData(ticket, passengerData, qrDataUrl, flight),
+        ...passengerData, // add check-in details like passportNumber, etc.
+        isCheckedIn: true, // flag so you can use it in filtering if needed
+        departureDate: ticket.departureDate, // Add the departure date
+        checkInTime: new Date().toISOString(), // Add the check-in time
+      };
 
-      // Fix: Ensure the value is a string (fallback to empty string if undefined)
-      saveTicket(
-        ticketHTML,
-        passengerData.expirationDate || "", // Ensure a string is passed here
-        `${ticket.firstName} ${ticket.lastName}`,
-        ticket._id || "" // Ensure a string is passed here
-      );
+      if (ticket._id) {
+        await saveTicket(
+          ticketData,
+          passengerData.expirationDate || "",
+          ticket._id
+        );
+        checkedInTickets.value.push(ticketData); // Store the ticket for display
+      } else {
+        console.error("Ticket ID is missing.");
+      }
     }
 
     success.value = true;

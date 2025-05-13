@@ -72,6 +72,15 @@ export interface Ticket {
   flight_id: string;
   departureDate: string;
   isCheckedIn?: boolean;
+  departureAirportName: string;
+  arrivalAirportName: string;
+  departureIATA: string;
+  arrivalIATA: string;
+  flightNumber: string;
+  flightStatus: string;
+  departureTime: string;
+  qrDataUrl: string;
+  checkInTime: string;
 }
 
 export interface Booking {
