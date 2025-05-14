@@ -130,6 +130,8 @@ const today = new Date();
 const activeFlights = computed(() =>
   props.flights.filter((flight) => {
     const end = new Date(flight.operatingPeriod.endDate);
+    if (flight.status === "Cancelled") return false;
+
     return today <= end;
   })
 );
