@@ -1,3 +1,4 @@
+// This function is used to make API requests with error handling and authentication support.
 export const makeRequest = async (
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
@@ -21,7 +22,7 @@ export const makeRequest = async (
     });
 
     const responseText = await response.text();
-    console.log(`Response (${method} ${endpoint}):`, responseText);
+    // console.log(`Response (${method} ${endpoint}):`, responseText);
 
     if (!response.ok) throw new Error(responseText || "API request failed");
 
@@ -33,7 +34,7 @@ export const makeRequest = async (
       return responseText;
     }
   } catch (err) {
-    console.error(`Error in ${method} ${endpoint}:`, err);
+    // console.error(`Error in ${method} ${endpoint}:`, err);
     throw new Error((err as Error).message || "An unknown error occurred");
   }
 };

@@ -40,7 +40,6 @@
           class="bg-zinc-800 p-6 rounded-xl shadow-inner border border-[#ff7f50] flex flex-col justify-between"
         >
           <div class="flex flex-col justify-between h-full">
-            <!-- Flight Info Section -->
             <div
               class="flex items-center justify-between border-b border-[#ff7f50] pb-2 mb-3"
             >
@@ -48,8 +47,6 @@
                 ✈️ {{ flight.flightNumber }}
               </p>
             </div>
-
-            <!-- Flight Details -->
             <div class="space-y-2 text-gray-300 text-sm">
               <p>
                 <strong class="text-white">From:</strong>
@@ -93,7 +90,6 @@
               </p>
             </div>
 
-            <!-- Action Button -->
             <button
               class="bg-[#ff7f50] text-white mt-6 py-2 rounded-lg text-sm font-medium hover:bg-[#e76e3c]"
               @click="$emit('select-flight', flight)"
@@ -131,7 +127,6 @@ const emit = defineEmits<{
 
 const today = new Date();
 
-// Only include flights that are currently within their operating period
 const activeFlights = computed(() =>
   props.flights.filter((flight) => {
     const end = new Date(flight.operatingPeriod.endDate);

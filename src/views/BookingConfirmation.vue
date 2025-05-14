@@ -2,12 +2,10 @@
   <div
     class="max-w-4xl mx-auto my-10 p-8 bg-black border border-[#ff7f50] text-gray-800 shadow-2xl rounded-2xl"
   >
-    <!-- Title -->
     <h2 class="text-4xl font-bold text-green-600 mb-8 text-center">
       ✈️ Booking Confirmation
     </h2>
 
-    <!-- Only render the details once booking is loaded -->
     <div v-if="booking">
       <!-- Booking Overview -->
       <BookingHeader
@@ -39,7 +37,6 @@
         <TicketList :tickets="booking!.tickets" />
       </div>
 
-      <!-- Back Home -->
       <div class="text-center">
         <router-link
           to="/"
@@ -80,7 +77,7 @@ onMounted(async () => {
   try {
     booking.value = JSON.parse(stored) as Booking;
   } catch (err) {
-    console.error("Could not parse booking from localStorage:", err);
+    // console.error("Could not parse booking from localStorage:", err);
     return;
   }
 
@@ -93,7 +90,7 @@ onMounted(async () => {
       try {
         flightsById.value[id] = await fetchFlightById(id);
       } catch (e) {
-        console.error("Failed to fetch flight", id, e);
+        // console.error("Failed to fetch flight", id, e);
         flightsById.value[id] = null; // Set to null if there's an error
       }
     })

@@ -16,7 +16,7 @@
       </p>
       <p>
         <span class="font-semibold text-[#ff7f50]">Date of Birth:</span>
-        {{ formattedDOB }}
+        {{ formatDate(user.dateOfBirth) }}
       </p>
     </div>
 
@@ -82,7 +82,6 @@
       </form>
     </div>
 
-    <!-- Messages -->
     <p v-if="successMessage" class="text-green-400 mt-4 text-sm">
       {{ successMessage }}
     </p>
@@ -93,11 +92,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import type { User } from "@/interfaces/interfaces";
 import { useUsers } from "@/modules/auth/useUsers";
+import { formatDate } from "../../modules/functions/dateFormater";
 
-// Props for v-model
 const props = defineProps<{ modelValue: User }>();
 const emit = defineEmits<{ (e: "update:modelValue", user: User): void }>();
 
@@ -105,27 +104,12 @@ const user = ref<User>({ ...props.modelValue });
 
 const { updateUserProfile, changeUserPassword } = useUsers();
 
-// Inputs for password change
 const currentPassword = ref("");
 const newPassword = ref("");
 
-// Feedback messages
 const successMessage = ref("");
 const errorMessage = ref("");
 
-// Formatted DOB (based on local user ref)
-const formattedDOB = computed(() => {
-  const dob = user.value.dateOfBirth;
-  if (!dob) return "";
-  const d = new Date(dob);
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-});
-
-// Handlers
 const handleUpdateProfile = async () => {
   try {
     await updateUserProfile({
@@ -137,7 +121,6 @@ const handleUpdateProfile = async () => {
     successMessage.value = "Profile updated successfully!";
     errorMessage.value = "";
 
-    // Emit changes to parent
     emit("update:modelValue", user.value);
   } catch (err) {
     successMessage.value = "";

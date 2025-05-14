@@ -1,10 +1,12 @@
 import { ref, onMounted } from "vue";
 import { makeRequest } from "./functions/makeRequest";
-import { useUsers } from "../modules/auth/useUsers"; // for token
+import { useUsers } from "../modules/auth/useUsers";
 import { useAirports } from "../modules/useAirports";
 
 export const useCheckIn = () => {
-  const { airportNameMap, fetchAirports } = useAirports(); // Using airport name map
+  const { airportNameMap, fetchAirports } = useAirports();
+  const { getTokenAndUserId } = useUsers();
+
   onMounted(() => {
     fetchAirports();
   });
@@ -14,8 +16,7 @@ export const useCheckIn = () => {
   const success = ref<boolean>(false);
   const generatedTickets = ref<string[]>([]);
 
-  const { getTokenAndUserId } = useUsers();
-
+  // Function to check in a passengers
   const checkIn = async (
     ticketId: string,
     checkInData: {
@@ -33,12 +34,7 @@ export const useCheckIn = () => {
       const token = getTokenAndUserId().token;
       if (!token) throw new Error("User not logged in");
 
-      await makeRequest(
-        `/checkin/${ticketId}`,
-        "POST",
-        checkInData,
-        true // token will be included
-      );
+      await makeRequest(`/checkin/${ticketId}`, "POST", checkInData, true);
 
       success.value = true;
     } catch (err: any) {
@@ -49,7 +45,7 @@ export const useCheckIn = () => {
     }
   };
 
-  // Function to generate ticket HTML data and return ticket object for backend
+  // Function to generate ticket data
   const generateTicketData = (
     ticket: any,
     passengerData: any,
@@ -58,7 +54,6 @@ export const useCheckIn = () => {
   ) => {
     const airportMap = airportNameMap.value;
 
-    // Ensure the departure and arrival airport IDs are IATA codes.
     const departureIATA =
       flight.route.departureAirportCode ||
       flight.route.departureAirport_id ||
@@ -68,7 +63,6 @@ export const useCheckIn = () => {
       flight.route.arrivalAirport_id ||
       "???";
 
-    // Lookup airport names using the airportMap (using IATA codes).
     const departureAirportName = airportMap[departureIATA] || "Unknown";
     const arrivalAirportName = airportMap[arrivalIATA] || "Unknown";
 
@@ -89,7 +83,7 @@ export const useCheckIn = () => {
       qrDataUrl,
     };
 
-    return ticketData; // Returns the ticket data object for saving to the backend
+    return ticketData;
   };
 
   // Save ticket to the backend
@@ -105,18 +99,12 @@ export const useCheckIn = () => {
       ticketId,
       ticketData,
       expirationDate,
-      userId, // Add this
+      userId,
     };
 
     try {
-      // Send the ticket to the backend to update the ticket information
-      await makeRequest(
-        `/tickets/${ticketId}`, // Update ticket route
-        "PUT",
-        newTicket,
-        true // Include token for authentication
-      );
-      console.log("Ticket updated successfully:", newTicket);
+      await makeRequest(`/tickets/${ticketId}`, "PUT", newTicket, true);
+      // console.log("Ticket updated successfully:", newTicket);
     } catch (error) {
       console.error("Failed to update ticket:", error);
     }
@@ -131,10 +119,10 @@ export const useCheckIn = () => {
         undefined,
         true
       );
-      console.log("✅ Tickets fetched correctly:", data); // This should be the array
-      return data; // ✅ Return data directly, not data.data
+      // console.log("Tickets fetched correctly:", data);
+      return data;
     } catch (err) {
-      console.error("❌ Error fetching saved tickets:", err);
+      // console.error("Error fetching saved tickets:", err);
       return [];
     }
   };
@@ -144,27 +132,75 @@ export const useCheckIn = () => {
     return `ticket-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   };
 
-  // Download ticket HTML files
-  const downloadTickets = (generatedTickets: string[]) => {
-    generatedTickets.forEach((ticketHtml, index) => {
-      const blob = new Blob([ticketHtml], { type: "text/html" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `ticket_${index + 1}.html`;
-      link.click();
-    });
+  const getTicketId = (ticket: any) => {
+    return ticket._id || `temp-${ticket.firstName}-${ticket.lastName}`;
   };
+
+  const minExpirationDate = (ticket: any) => {
+    const departureDate = new Date(ticket.departureDate);
+    departureDate.setMonth(departureDate.getMonth() + 3);
+    return departureDate.toISOString().split("T")[0];
+  };
+  const validateExpirationDate = (
+    ticket: any,
+    checkInData: Record<string, any>,
+    errors: Record<string, any>,
+    getTicketId: (ticket: any) => string
+  ) => {
+    const expirationDate = new Date(
+      checkInData[getTicketId(ticket)].expirationDate
+    );
+    const departureDate = new Date(ticket.departureDate);
+    if (expirationDate < departureDate) {
+      errors[getTicketId(ticket)] = {
+        ...errors[getTicketId(ticket)],
+        expirationDate:
+          "Expiration date must be at least 3 months after departure",
+      };
+    } else {
+      errors[getTicketId(ticket)] = {
+        ...errors[getTicketId(ticket)],
+        expirationDate: undefined,
+      };
+    }
+  };
+
+  const validateBirthdate = (
+    ticket: any,
+    checkInData: Record<string, any>,
+    errors: Record<string, any>,
+    getTicketId: (ticket: any) => string
+  ) => {
+    const birthDate = new Date(checkInData[getTicketId(ticket)].dateOfBirth);
+    if (birthDate > new Date()) {
+      errors[getTicketId(ticket)] = {
+        ...errors[getTicketId(ticket)],
+        dateOfBirth: "Birthdate cannot be a future date",
+      };
+    } else {
+      errors[getTicketId(ticket)] = {
+        ...errors[getTicketId(ticket)],
+        dateOfBirth: undefined,
+      };
+    }
+  };
+
+  const minBirthdate = "1900-01-01";
 
   return {
     checkIn,
     generateTicketData,
     saveTicket,
-    downloadTickets,
     fetchSavedTickets,
     generateUniqueTicketId,
     loading,
     error,
     success,
     generatedTickets,
+    getTicketId,
+    minBirthdate,
+    minExpirationDate,
+    validateExpirationDate,
+    validateBirthdate,
   };
 };

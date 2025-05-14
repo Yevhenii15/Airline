@@ -1,12 +1,11 @@
 import { ref } from "vue";
-import type { Flight, NewFlight } from "@/interfaces/interfaces";
+import { makeRequest } from "./functions/makeRequest";
 import { useUsers } from "./auth/useUsers";
 import { useBookings } from "../modules/useBookings";
-
-import { makeRequest } from "./functions/makeRequest"; // Unified request handling
+import type { Flight, NewFlight } from "@/interfaces/interfaces";
 
 const { getTokenAndUserId } = useUsers();
-const { cancelBooking, fetchAllBookings, bookings } = useBookings();
+const { fetchAllBookings, bookings } = useBookings();
 
 export const useFlights = () => {
   const error = ref<string | null>(null);
@@ -17,18 +16,18 @@ export const useFlights = () => {
     loading.value = true;
     try {
       const data: Flight[] = await makeRequest("/flights", "GET");
-      flights.value = data || []; // Ensure it's always an array
-      console.log("✅ Flights fetched", flights.value);
+      flights.value = data || [];
+      // console.log("✅ Flights fetched", flights.value);
     } catch (err) {
       error.value = (err as Error).message;
-      flights.value = []; // Reset on error to avoid breaking Vue reactivity
+      flights.value = [];
     } finally {
       loading.value = false;
     }
   };
   const fetchFlightById = async (id: string): Promise<Flight | null> => {
     loading.value = true;
-    console.log(`${import.meta.env.VITE_API_BASE_URL}/flights/${id}`);
+    // console.log(`${import.meta.env.VITE_API_BASE_URL}/flights/${id}`);
 
     try {
       const res = await fetch(
@@ -37,15 +36,15 @@ export const useFlights = () => {
       if (!res.ok) {
         // Handle not found or deleted flight
         if (res.status === 404) {
-          return null; // Return null to indicate the flight was deleted
+          return null;
         }
         throw new Error("Failed to fetch flight");
       }
       return await res.json();
     } catch (err) {
       error.value = (err as Error).message;
-      console.error("Error in fetchFlightById:", error.value);
-      throw err; // Rethrow to handle it in the calling function
+      // console.error("Error in fetchFlightById:", error.value);
+      throw err;
     } finally {
       loading.value = false;
     }
@@ -64,99 +63,98 @@ export const useFlights = () => {
         true
       );
       flights.value.push(newFlight);
-      console.log("🛫 New flight added", newFlight);
+      // console.log("🛫 New flight added", newFlight);
 
-      await fetchFlights(); // Refresh flights list
+      await fetchFlights();
     } catch (err) {
       console.error("❌ Error in addFlight:", (err as Error).message);
       error.value = (err as Error).message;
     }
   };
+  const validateFlightId = (id: string): boolean => {
+    if (!id || typeof id !== "string" || !id.trim()) {
+      console.error("❌ ERROR: Invalid or missing flight ID!");
+      return false;
+    }
+    return true;
+  };
+
+  const getBookingsForFlight = (flightId: string) => {
+    return bookings.value.filter((booking) =>
+      booking.tickets.some((ticket) => ticket.flight_id === flightId)
+    );
+  };
+
+  const cancelAssociatedBookings = async (
+    bookingsForFlight: typeof bookings.value,
+    flightId: string
+  ): Promise<void> => {
+    for (const booking of bookingsForFlight) {
+      let hasChanges = false;
+
+      booking.tickets = booking.tickets.map((ticket) => {
+        if (
+          ticket.flight_id === flightId &&
+          ticket.flightStatus !== "Cancelled"
+        ) {
+          hasChanges = true;
+          return { ...ticket, flightStatus: "Cancelled" };
+        }
+        return ticket;
+      });
+
+      if (hasChanges) {
+        await makeRequest(
+          `/bookings/${booking._id}`,
+          "PATCH",
+          { tickets: booking.tickets },
+          true
+        );
+
+        await makeRequest(
+          `/bookings/${booking._id}/cancel`,
+          "PATCH",
+          undefined,
+          true
+        );
+      }
+    }
+  };
+
+  const cancelFlightBackend = async (flightId: string): Promise<void> => {
+    await makeRequest(`/flights/${flightId}`, "DELETE", undefined, true);
+  };
+
+  const updateFlightStatusInFrontend = (flightId: string): void => {
+    const flight = flights.value.find((f) => f._id === flightId);
+    if (flight) {
+      flight.status = "Cancelled";
+    }
+  };
 
   const cancelFlight = async (_id: string): Promise<void> => {
     try {
-      if (!_id) {
-        console.error("❌ ERROR: Missing flight ID! Cannot cancel.");
-        return;
-      }
+      if (!validateFlightId(_id)) return;
 
-      const { token, isAdmin } = getTokenAndUserId();
-
+      const { isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      if (typeof _id !== "string" || !_id.trim()) {
-        console.error("❌ ERROR: Invalid flight ID!");
-        return;
-      }
-
-      // Step 1: Fetch all bookings and find those with this flight
       await fetchAllBookings();
-      const bookingsForFlight = bookings.value.filter((booking) =>
-        booking.tickets.some((ticket) => ticket.flight_id === _id)
-      );
+      const bookingsForFlight = getBookingsForFlight(_id);
 
       if (bookingsForFlight.length > 0) {
         const confirmCancel = confirm(
           "This flight has existing bookings. Do you want to cancel the flight and all associated bookings?"
         );
+        if (!confirmCancel) return;
 
-        if (!confirmCancel) {
-          console.log("❌ Flight cancellation aborted by user.");
-          return;
-        }
-
-        for (const booking of bookingsForFlight) {
-          let hasChanges = false;
-
-          for (const ticket of booking.tickets) {
-            if (
-              ticket.flight_id === _id &&
-              ticket.flightStatus !== "Cancelled"
-            ) {
-              ticket.flightStatus = "Cancelled";
-              hasChanges = true;
-            }
-          }
-
-          if (hasChanges) {
-            booking.tickets = booking.tickets.map((ticket) =>
-              ticket.flight_id === _id
-                ? { ...ticket, flightStatus: "Cancelled" }
-                : ticket
-            );
-
-            // Save ticket changes
-            await makeRequest(
-              `/bookings/${booking._id}`,
-              "PATCH",
-              { tickets: booking.tickets },
-              true
-            );
-
-            // Mark the whole booking as cancelled
-            await makeRequest(
-              `/bookings/${booking._id}/cancel`,
-              "PATCH",
-              undefined,
-              true
-            );
-          }
-        }
-
+        await cancelAssociatedBookings(bookingsForFlight, _id);
         alert("All related bookings have been canceled.");
       }
 
-      // Step 3: Mark the flight as canceled (soft delete)
-      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true); // Still using DELETE method as per route
-
-      // Step 4: Update flight list in frontend
-      const flightToCancel = flights.value.find((f) => f._id === _id);
-      if (flightToCancel) {
-        flightToCancel.status = "Cancelled";
-      }
-
+      await cancelFlightBackend(_id);
+      updateFlightStatusInFrontend(_id);
       alert("Flight has been successfully canceled.");
-      console.log("✅ Flight canceled:", _id);
     } catch (err) {
       alert("Failed to cancel flight");
       console.error("❌ Error in cancelFlight:", err);
@@ -185,7 +183,7 @@ export const useFlights = () => {
         flight._id === id ? { ...flight, ...updatedData } : flight
       );
 
-      console.log("✈️ Flight updated", updatedData);
+      // console.log("✈️ Flight updated", updatedData);
     } catch (err) {
       console.error("❌ Error in updateFlight:", err);
       error.value = (err as Error).message;

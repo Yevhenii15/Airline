@@ -91,9 +91,19 @@
         </p>
         <p class="text-gray-400 text-sm">
           📅 Operating Period:
-          {{ formatDate(flight.operatingPeriod.startDate) }} to
-          {{ formatDate(flight.operatingPeriod.endDate) }}
+          {{
+            flight.operatingPeriod
+              ? formatDate(flight.operatingPeriod.startDate)
+              : "N/A"
+          }}
+          to
+          {{
+            flight.operatingPeriod
+              ? formatDate(flight.operatingPeriod.endDate)
+              : "N/A"
+          }}
         </p>
+
         <p class="text-gray-400 text-sm">
           🔄 Return Flight Required:
           {{ flight.isReturnFlightRequired ? "Yes" : "No" }}
@@ -101,12 +111,14 @@
 
         <div class="mt-4 flex space-x-2">
           <button
+            v-if="flight.status !== 'Cancelled'"
             @click="$emit('delete-flight', flight._id)"
             class="btn bg-red-600 hover:bg-red-700"
           >
             🗑 Delete
           </button>
           <button
+            v-if="flight.status !== 'Cancelled'"
             @click="editFlight(flight)"
             class="btn bg-green-600 hover:bg-green-700"
           >
@@ -124,7 +136,7 @@ import type { Flight, flightRoute } from "../../interfaces/interfaces";
 import { formatDate } from "../../modules/functions/dateFormater";
 
 const sortedFlights = computed(() => {
-  return [...props.flights].reverse(); // creates a reversed copy
+  return [...props.flights].reverse();
 });
 
 const props = defineProps<{
@@ -155,10 +167,18 @@ const saveFlight = () => {
   }
 };
 
-const getRouteName = (route: flightRoute) =>
-  `${props.airportNameMap[route.departureAirport_id]} → ${
+const getRouteName = (route: flightRoute | null | undefined) => {
+  if (
+    !route ||
+    !props.airportNameMap[route.departureAirport_id] ||
+    !props.airportNameMap[route.arrivalAirport_id]
+  ) {
+    return "Unknown Route";
+  }
+  return `${props.airportNameMap[route.departureAirport_id]} → ${
     props.airportNameMap[route.arrivalAirport_id]
   }`;
+};
 </script>
 
 <style scoped>

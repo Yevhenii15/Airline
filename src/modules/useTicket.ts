@@ -10,15 +10,12 @@ export const useTickets = () => {
     flightDate: string
   ): Promise<string[]> => {
     try {
-      // Make the API request with both flightId and flightDate
       const data = await makeRequest(
         `/tickets/booked/${flightId}/${flightDate}`
       );
 
-      // Log the response for debugging purposes
-      console.log("Booked seats data:", data);
+      // console.log("Booked seats data:", data);
 
-      // Type assertion to ensure data is of the expected format
       if (Array.isArray(data.bookedSeats)) {
         return data.bookedSeats;
       } else {
@@ -43,7 +40,6 @@ export const useTickets = () => {
     },
   ]);
   const availableSeats = computed(() => {
-    // Generate full seat map with status
     const rows = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
     const seatLetters = ["A", "B", "C", "D", "E", "F"];
 

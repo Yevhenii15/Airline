@@ -6,12 +6,12 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import LoginRegister from "../../components/login/LoginRegister.vue"; // Your login/register popup component
+import LoginRegister from "../../components/login/LoginRegister.vue";
 
 const isPopupVisible = ref(true);
 
 const closePopup = () => {
-  isPopupVisible.value = false; // Close the popup when user logs in or registers
+  isPopupVisible.value = false;
 };
 </script>
 

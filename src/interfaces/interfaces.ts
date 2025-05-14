@@ -1,3 +1,19 @@
+export interface Airport {
+  _id: string;
+  name: string;
+  airportCode: string;
+  cityName: string;
+  countryCode: string;
+}
+export interface flightRoute {
+  _id: string;
+  departureAirport_id: string;
+  arrivalAirport_id: string;
+  duration: string;
+}
+
+export type NewFlightRoute = Omit<flightRoute, "_id">;
+
 export interface Flight {
   _id: string;
   flightNumber: string;
@@ -25,24 +41,6 @@ export interface Seat {
   seatNumber: string;
   status: string;
 }
-
-export interface flightRoute {
-  _id: string;
-  departureAirport_id: string;
-  arrivalAirport_id: string;
-  duration: string;
-}
-
-export type NewFlightRoute = Omit<flightRoute, "_id">;
-
-export interface Airport {
-  _id: string;
-  name: string;
-  airportCode: string;
-  cityName: string;
-  countryCode: string;
-}
-
 export type User = {
   userId: string;
   name: string;
@@ -52,14 +50,15 @@ export type User = {
   dateOfBirth: Date;
   isAdmin: boolean;
 };
-
-export interface AboutCompany {
-  _id: string;
-  name: string;
-  description: string;
-  address: string;
-  phone: string;
-  email: string;
+export interface Booking {
+  _id?: string;
+  user_id: string;
+  user_email: string;
+  totalPrice: number;
+  bookingDate: string;
+  numberOfTickets: number;
+  bookingStatus: "Pending" | "Confirmed" | "Cancelled" | "Scheduled";
+  tickets: Ticket[];
 }
 export interface Ticket {
   _id?: string;
@@ -72,15 +71,14 @@ export interface Ticket {
   flight_id: string;
   departureDate: string;
   isCheckedIn?: boolean;
+  flightStatus?: string;
 }
 
-export interface Booking {
-  _id?: string;
-  user_id: string;
-  user_email: string;
-  totalPrice: number;
-  bookingDate: string;
-  numberOfTickets: number;
-  bookingStatus: "Pending" | "Confirmed" | "Cancelled" | "Scheduled";
-  tickets: Ticket[];
+export interface AboutCompany {
+  _id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  email: string;
 }

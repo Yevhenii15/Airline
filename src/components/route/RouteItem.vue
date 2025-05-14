@@ -39,13 +39,10 @@ const emit = defineEmits<{
   (e: "edit", payload: { id: string; data: Omit<flightRoute, "_id"> }): void;
 }>();
 
-// Using two-way binding with v-model
 const route = ref<flightRoute>({ ...props.route });
 
-// Emit delete event
 const onDelete = () => emit("delete", route.value._id);
 
-// Emit edit event with updated data
 const onEdit = (data: Omit<flightRoute, "_id">) =>
   emit("edit", { id: route.value._id, data });
 </script>

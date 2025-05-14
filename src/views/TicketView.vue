@@ -44,7 +44,7 @@ onMounted(async () => {
     const savedTickets = await fetchSavedTickets(userId);
     tickets.value = savedTickets;
   } catch (error) {
-    console.error("❌ Failed to fetch tickets:", error);
+    // console.error("❌ Failed to fetch tickets:", error);
   } finally {
     loading.value = false;
   }

@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import Vue3Datepicker from "vue3-datepicker";
 
-// Use defineModel instead of props + emit
 const model = defineModel<Date | undefined>();
 
 const props = defineProps<{

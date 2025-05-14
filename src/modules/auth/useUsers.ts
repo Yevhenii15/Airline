@@ -17,7 +17,7 @@ export const useUsers = () => {
   const password = ref<string>("");
   const dateOfBirth = ref<Date>(new Date());
 
-  // 🌟 Fetch current user profile
+  // Fetch current user profile
   const fetchUserProfile = async (): Promise<void> => {
     try {
       loading.value = true;
@@ -30,10 +30,12 @@ export const useUsers = () => {
       loading.value = false;
     }
   };
+
+  // Login
   const fetchToken = async (
     email: string,
     password: string,
-    router: ReturnType<typeof useRouter> // Pass the router as an argument
+    router: ReturnType<typeof useRouter>
   ): Promise<void> => {
     try {
       const authResponse = await makeRequest("/user/login", "POST", {
@@ -45,11 +47,10 @@ export const useUsers = () => {
       user.value = authResponse.data.user;
 
       updateAuthState(authResponse.data.token, authResponse.data.user);
-      console.log("User logged in successfully:", authResponse);
+      // console.log("User logged in successfully:", authResponse);
 
       alert("Logged in successfully!");
 
-      // Redirect to the dashboard or home page after successful login
       if (user.value?.isAdmin) {
         router.push("/admin");
       } else {
@@ -57,12 +58,13 @@ export const useUsers = () => {
       }
     } catch (err) {
       error.value = (err as Error).message;
-      console.error("Login failed:", error.value);
+      // console.error("Login failed:", error.value);
       alert(`Login failed: ${error.value}`);
       resetAuthState();
     }
   };
 
+  // Register User
   const registerUser = async (
     name: string,
     email: string,
@@ -70,7 +72,7 @@ export const useUsers = () => {
     password: string,
     dateOfBirth: Date,
     isAdmin: boolean,
-    router: ReturnType<typeof useRouter> // Accept router as an argument
+    router: ReturnType<typeof useRouter>
   ): Promise<void> => {
     try {
       const authResponse = await makeRequest("/user/register", "POST", {
@@ -82,7 +84,6 @@ export const useUsers = () => {
         isAdmin,
       });
 
-      // Check if the user data and isAdmin exist in the response
       if (
         !authResponse.data ||
         typeof authResponse.data.isAdmin === "undefined"
@@ -93,22 +94,22 @@ export const useUsers = () => {
       }
 
       token.value = authResponse.data.token;
-      user.value = authResponse.data; // directly use authResponse.data here
+      user.value = authResponse.data;
 
       updateAuthState(authResponse.data.token, authResponse.data);
-      console.log("User registered successfully:", authResponse);
+      // console.log("User registered successfully:", authResponse);
 
       // Attempt to log the user in immediately after registration
-      await fetchToken(email, password, router); // Pass router here
+      await fetchToken(email, password, router);
       alert("Registered and logged in successfully!");
     } catch (err) {
       error.value = (err as Error).message;
-      console.error("Registration failed:", error.value);
+      // console.error("Registration failed:", error.value);
       alert(`Registration failed: ${error.value}`);
     }
   };
 
-  // 🌟 Update User Profile
+  // Update User Profile
   const updateUserProfile = async (data: {
     name: string;
     phone: string;
@@ -123,7 +124,7 @@ export const useUsers = () => {
     }
   };
 
-  // 🌟 Change User Password
+  // Change User Password
   const changeUserPassword = async (
     currentPassword: string,
     newPassword: string
@@ -139,20 +140,20 @@ export const useUsers = () => {
         },
         true
       );
-      console.log("Password changed successfully:", resp.data);
+      // console.log("Password changed successfully:", resp.data);
     } catch (err) {
       error.value = (err as Error).message;
       throw err;
     }
   };
 
-  // 🌟 Logout
+  // Logout
   const logout = (): void => {
     resetAuthState();
-    console.log("User logged out");
+    // console.log("User logged out");
   };
 
-  // 🌟 Get Token and User ID
+  // Get Token and User ID
   const getTokenAndUserId = (): {
     token: string;
     userId: string;
@@ -186,7 +187,7 @@ export const useUsers = () => {
     }
   };
 
-  // 🌟 Helper: Update Authentication State
+  // Update Authentication State
   const updateAuthState = (newToken: string, userData: User) => {
     token.value = newToken;
     user.value = userData;
@@ -198,7 +199,7 @@ export const useUsers = () => {
     localStorage.setItem("isAdmin", String(userData.isAdmin));
   };
 
-  // 🌟 Helper: Reset Authentication State
+  // Reset Authentication State
   const resetAuthState = () => {
     token.value = null;
     user.value = null;

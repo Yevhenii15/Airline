@@ -56,21 +56,19 @@
 import { ref, watch } from "vue";
 import type { NewFlightRoute, Airport } from "../../interfaces/interfaces";
 
-// Props & Emits for v-model
 const props = defineProps<{
   airports: Airport[];
   durations: string[];
-  modelValue: NewFlightRoute; // We bind modelValue for two-way binding
+  modelValue: NewFlightRoute;
 }>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", payload: NewFlightRoute): void; // Emits changes to the parent
+  (e: "update:modelValue", payload: NewFlightRoute): void;
   (e: "submit", payload: NewFlightRoute): void;
 }>();
 
-const form = ref<NewFlightRoute>({ ...props.modelValue }); // Initialize form with modelValue
+const form = ref<NewFlightRoute>({ ...props.modelValue });
 
-// Watch for changes in modelValue (this will sync form with the parent)
 watch(
   () => props.modelValue,
   (newVal) => {
@@ -80,13 +78,12 @@ watch(
 
 const onSubmit = () => {
   emit("submit", { ...form.value });
-  emit("update:modelValue", { ...form.value }); // Emit updated value to parent
+  emit("update:modelValue", { ...form.value });
 
-  // Reset form after submission
   form.value = {
     departureAirport_id: "",
     arrivalAirport_id: "",
     duration: "",
-  }; // Reset to empty or default values
+  };
 };
 </script>

@@ -1,8 +1,8 @@
 import { ref } from "vue";
-import type { flightRoute, NewFlightRoute } from "../interfaces/interfaces";
+import { makeRequest } from "./functions/makeRequest";
 import { useUsers } from "./auth/useUsers";
 import { useFlights } from "./useFlights";
-import { makeRequest } from "./functions/makeRequest";
+import type { flightRoute, NewFlightRoute } from "../interfaces/interfaces";
 
 const { flights, fetchFlights } = useFlights();
 const { getTokenAndUserId } = useUsers();
@@ -16,8 +16,8 @@ export const useFlightRoutes = () => {
     loading.value = true;
     try {
       const data: flightRoute[] = await makeRequest("/routes", "GET");
-      routes.value.splice(0, routes.value.length, ...data); // Force reactivity
-      console.log("Routes fetched", routes.value);
+      routes.value.splice(0, routes.value.length, ...data);
+      // console.log("Routes fetched", routes.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {
@@ -37,12 +37,13 @@ export const useFlightRoutes = () => {
         true
       );
       routes.value.push(newRoute);
-      console.log("New route added", newRoute);
+      // console.log("New route added", newRoute);
+      alert("Route added successfully!");
 
       await fetchRoutes();
     } catch (err) {
       console.error("Error in addRoute:", (err as Error).message);
-      error.value = (err as Error).message || "Failed to add route"; // Ensure error message is set
+      error.value = (err as Error).message || "Failed to add route";
     }
   };
 
@@ -56,12 +57,10 @@ export const useFlightRoutes = () => {
       const { token, isAdmin } = getTokenAndUserId();
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      // Ensure flights are loaded
       if (flights.value.length === 0) {
         await fetchFlights();
       }
 
-      // Check if the route is used in any flight
       const usedInFlights = flights.value.some(
         (flight) => flight.route?._id === _id
       );
@@ -73,9 +72,8 @@ export const useFlightRoutes = () => {
 
       await makeRequest(`/routes/${_id}`, "DELETE", undefined, true);
 
-      // Update frontend state after deletion
       routes.value = routes.value.filter((route) => route._id !== _id);
-      console.log("✅ Route deleted:", _id);
+      // console.log("✅ Route deleted:", _id);
       alert("Route deleted successfully");
     } catch (err) {
       console.error("❌ Error in deleteRoute:", err);
@@ -99,16 +97,16 @@ export const useFlightRoutes = () => {
         true
       );
 
-      // Find index of the updated route and replace it while preserving `_id`
       const index = routes.value.findIndex((route) => route._id === id);
       if (index !== -1) {
         routes.value[index] = {
           ...updatedData,
-          _id: id, // Ensure _id remains unchanged
+          _id: id,
         };
       }
 
-      console.log("Route updated", routes.value[index]);
+      // console.log("Route updated", routes.value[index]);
+      alert("Route updated successfully!");
     } catch (err) {
       error.value = (err as Error).message;
     }

@@ -52,7 +52,6 @@ import { useUsers } from "./modules/auth/useUsers";
 import { state } from "./modules/globalStates/state";
 import LoginRegister from "./components/login/LoginRegister.vue";
 
-// Extract reactivity properly from state
 const { isLoggedIn, isAdmin } = toRefs(state);
 const { logout } = useUsers();
 
@@ -132,7 +131,7 @@ const closeLoginRegisterPopup = () => {
 }
 
 .content {
-  padding-top: 80px; /* Adjusted to prevent navbar overlap */
+  padding-top: 80px;
   flex: 1;
 }
 </style>

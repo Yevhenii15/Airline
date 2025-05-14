@@ -62,11 +62,7 @@
 import { onMounted, ref, computed } from "vue";
 import { useFlightRoutes } from "../../modules/useFlightRoutes";
 import { useAirports } from "../../modules/useAirports";
-import type {
-  flightRoute,
-  NewFlightRoute,
-  Airport,
-} from "../../interfaces/interfaces";
+import type { flightRoute, NewFlightRoute } from "../../interfaces/interfaces";
 
 import RouteForm from "../../components/route/RouteForm.vue";
 import RouteItem from "../../components/route/RouteItem.vue";
@@ -80,6 +76,7 @@ const {
   addRoute,
   updateRoute,
 } = useFlightRoutes();
+
 const {
   airports,
   fetchAirports,
@@ -88,7 +85,7 @@ const {
 } = useAirports();
 
 const sortedRoutes = computed(() => {
-  return [...routes.value].reverse(); // assuming routes is a ref
+  return [...routes.value].reverse();
 });
 
 onMounted(() => {
@@ -115,9 +112,7 @@ const newRouteData = ref<NewFlightRoute>({
 
 const addRouteHandler = async (newRoute: NewFlightRoute) => {
   await addRoute(newRoute);
-  alert("Route added successfully!");
 
-  // Reset the newRouteData in the parent to clear the form
   newRouteData.value = {
     departureAirport_id: "",
     arrivalAirport_id: "",
@@ -133,6 +128,5 @@ const updateRouteHandler = async ({
   data: Omit<flightRoute, "_id">;
 }) => {
   await updateRoute(id, data);
-  alert("Route updated successfully!");
 };
 </script>

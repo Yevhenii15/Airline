@@ -47,7 +47,15 @@
                   class="input"
                   required
                   :min="minBirthdate"
-                  @change="validateBirthdate(ticket)"
+                  @change="
+                    () =>
+                      validateBirthdate(
+                        ticket,
+                        checkInData,
+                        errors,
+                        getTicketId
+                      )
+                  "
                 />
                 <input
                   v-model="checkInData[getTicketId(ticket)].expirationDate"
@@ -55,7 +63,15 @@
                   class="input"
                   required
                   :min="minExpirationDate(ticket)"
-                  @change="validateExpirationDate(ticket)"
+                  @change="
+                    () =>
+                      validateExpirationDate(
+                        ticket,
+                        checkInData,
+                        errors,
+                        getTicketId
+                      )
+                  "
                 />
               </div>
 
@@ -129,11 +145,22 @@ import { useFlights } from "../modules/useFlights";
 import QRCode from "qrcode";
 
 const { fetchAirports } = useAirports();
+const { bookings, loading, fetchUserBookings } = useBookings();
+const {
+  checkIn,
+  saveTicket,
+  generateTicketData,
+  getTicketId,
+  minBirthdate,
+  minExpirationDate,
+  validateExpirationDate,
+  validateBirthdate,
+} = useCheckIn();
+const { fetchFlightById } = useFlights();
+
 onMounted(() => {
   fetchAirports();
 });
-const { bookings, loading, fetchUserBookings } = useBookings();
-const { checkIn, saveTicket, generateTicketData } = useCheckIn();
 
 const selectedBookingId = ref<string>("");
 const selectedBooking = ref<Booking | null>(null);
@@ -175,12 +202,60 @@ const selectBooking = () => {
   }
 };
 
-const getTicketId = (ticket: any) => {
-  return ticket._id || `temp-${ticket.firstName}-${ticket.lastName}`;
+const getValidTickets = () => {
+  if (!selectedBooking.value) return [];
+  return selectedBooking.value.tickets.filter((ticket) => ticket._id);
 };
 
-const { fetchFlightById } = useFlights();
+const fetchFlightDataForTickets = async (tickets: any[]) => {
+  return await Promise.all(
+    tickets.map(async (ticket) => {
+      const ticketId = getTicketId(ticket);
+      const passengerData = checkInData[ticketId];
+      const flight = await fetchFlightById(ticket.flight_id);
+      return { ticket, ticketId, passengerData, flight };
+    })
+  );
+};
 
+const processTicketCheckIn = async (
+  ticket: any,
+  ticketId: string,
+  passengerData: any,
+  flight: any
+) => {
+  if (!ticketId || !passengerData || !flight) return;
+
+  await checkIn(ticketId, passengerData);
+
+  const qrPayload = {
+    name: `${ticket.firstName} ${ticket.lastName}`,
+    flight: flight.flightNumber,
+    passport: passengerData.passportNumber,
+    dateOfBirth: passengerData.dateOfBirth,
+    nationality: passengerData.nationality,
+    expirationDate: passengerData.expirationDate,
+  };
+
+  const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload));
+
+  const ticketData = {
+    ...generateTicketData(ticket, passengerData, qrDataUrl, flight),
+    ...passengerData,
+    isCheckedIn: true,
+    departureDate: ticket.departureDate,
+    checkInTime: new Date().toISOString(),
+  };
+
+  if (ticket._id) {
+    await saveTicket(
+      ticketData,
+      passengerData.expirationDate || "",
+      ticket._id
+    );
+    checkedInTickets.value.push(ticketData);
+  }
+};
 const submitCheckIn = async () => {
   if (!selectedBooking.value) return;
 
@@ -188,19 +263,8 @@ const submitCheckIn = async () => {
   success.value = false;
 
   try {
-    const validTickets = selectedBooking.value.tickets.filter(
-      (ticket) => ticket._id // Ensure we're using the correct ticket ID
-    );
-
-    const ticketFlightPairs = await Promise.all(
-      validTickets.map(async (ticket) => {
-        const ticketId = getTicketId(ticket);
-        const passengerData = checkInData[ticketId];
-        const flight = await fetchFlightById(ticket.flight_id);
-
-        return { ticket, ticketId, passengerData, flight };
-      })
-    );
+    const validTickets = getValidTickets();
+    const ticketFlightPairs = await fetchFlightDataForTickets(validTickets);
 
     for (const {
       ticket,
@@ -208,40 +272,7 @@ const submitCheckIn = async () => {
       passengerData,
       flight,
     } of ticketFlightPairs) {
-      if (!ticketId || !passengerData || !flight) continue;
-
-      await checkIn(ticketId, passengerData);
-
-      const qrPayload = {
-        name: `${ticket.firstName} ${ticket.lastName}`,
-        flight: flight.flightNumber,
-        passport: passengerData.passportNumber,
-        dateOfBirth: passengerData.dateOfBirth,
-        nationality: passengerData.nationality,
-        expirationDate: passengerData.expirationDate,
-      };
-
-      const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload));
-
-      // Include the departure date and check-in time in the ticket data
-      const ticketData = {
-        ...generateTicketData(ticket, passengerData, qrDataUrl, flight),
-        ...passengerData, // add check-in details like passportNumber, etc.
-        isCheckedIn: true, // flag so you can use it in filtering if needed
-        departureDate: ticket.departureDate, // Add the departure date
-        checkInTime: new Date().toISOString(), // Add the check-in time
-      };
-
-      if (ticket._id) {
-        await saveTicket(
-          ticketData,
-          passengerData.expirationDate || "",
-          ticket._id
-        );
-        checkedInTickets.value.push(ticketData); // Store the ticket for display
-      } else {
-        console.error("Ticket ID is missing.");
-      }
+      await processTicketCheckIn(ticket, ticketId, passengerData, flight);
     }
 
     success.value = true;
@@ -249,48 +280,6 @@ const submitCheckIn = async () => {
     console.error("❌ Check-in error:", err);
   } finally {
     submitting.value = false;
-  }
-};
-
-const minExpirationDate = (ticket: any) => {
-  const departureDate = new Date(ticket.departureDate);
-  departureDate.setMonth(departureDate.getMonth() + 3);
-  return departureDate.toISOString().split("T")[0]; // Set minimum expiration date to 3 months ahead
-};
-
-const minBirthdate = "1900-01-01"; // Set the minimum birthdate to a valid past date
-
-const validateExpirationDate = (ticket: any) => {
-  const expirationDate = new Date(
-    checkInData[getTicketId(ticket)].expirationDate
-  );
-  const departureDate = new Date(ticket.departureDate);
-  if (expirationDate < departureDate) {
-    errors[getTicketId(ticket)] = {
-      ...errors[getTicketId(ticket)],
-      expirationDate:
-        "Expiration date must be at least 3 months after departure",
-    };
-  } else {
-    errors[getTicketId(ticket)] = {
-      ...errors[getTicketId(ticket)],
-      expirationDate: undefined,
-    };
-  }
-};
-
-const validateBirthdate = (ticket: any) => {
-  const birthDate = new Date(checkInData[getTicketId(ticket)].dateOfBirth);
-  if (birthDate > new Date()) {
-    errors[getTicketId(ticket)] = {
-      ...errors[getTicketId(ticket)],
-      dateOfBirth: "Birthdate cannot be a future date",
-    };
-  } else {
-    errors[getTicketId(ticket)] = {
-      ...errors[getTicketId(ticket)],
-      dateOfBirth: undefined,
-    };
   }
 };
 

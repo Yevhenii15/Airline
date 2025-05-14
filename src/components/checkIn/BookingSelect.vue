@@ -74,7 +74,6 @@ onMounted(async () => {
         console.error("Failed to fetch flight:", flightId, e);
       }
 
-      // Handle the case where flight is null
       if (!flight) {
         return {
           ...booking,
@@ -88,7 +87,7 @@ onMounted(async () => {
       return {
         ...booking,
         flightNumber: flight.flightNumber,
-        departureDate: flight.operatingPeriod.startDate, // or booking.tickets[0].departureDate if used
+        departureDate: flight.operatingPeriod.startDate,
         departureAirportId: flight.route.departureAirport_id,
         arrivalAirportId: flight.route.arrivalAirport_id,
       };

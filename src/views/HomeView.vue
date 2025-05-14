@@ -73,18 +73,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, watch, computed } from "vue";
-import { useCompany } from "../modules/useCompany";
-import CompanyCartInfo from "../components/home/CompanyInfoCard.vue";
-import FlightCards from "../components/home/FlightCard.vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, watchEffect, watch, computed, nextTick } from "vue";
 import type { Flight } from "../interfaces/interfaces";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
 import FlightSelect from "../components/booking/FlightSelect.vue";
 import DatePicker from "../components/booking/DatePicker.vue";
+import CompanyCartInfo from "../components/home/CompanyInfoCard.vue";
+import FlightCards from "../components/home/FlightCard.vue";
 
+import { useCompany } from "../modules/useCompany";
 import { useBookings } from "../modules/useBookings";
 import { useFlights } from "../modules/useFlights";
 import { useTickets } from "../modules/useTicket";
@@ -99,8 +99,8 @@ const {
 
 const { loading: flightLoading, flights, fetchFlights } = useFlights();
 const { numberOfPassengers, tickets } = useTickets();
-
 const { aboutCompany, fetchAboutInfo } = useCompany();
+
 const companyData = ref({ name: "Loading..." });
 const aboutCompanySanitized = computed(() => {
   const company = aboutCompany.value;
@@ -119,7 +119,6 @@ watchEffect(() => {
     companyData.value = { ...aboutCompany.value };
   }
 });
-import { nextTick } from "vue";
 
 // Reference to the FlightSelect section
 const flightSelectRef = ref<HTMLElement | null>(null);
@@ -132,15 +131,16 @@ const handleFlightSelection = async (flight: Flight) => {
   selectedFlight.value = flight._id;
 
   // Scroll to FlightSelect section
-  await nextTick(); // wait for DOM updates
+  await nextTick();
   flightSelectRef.value?.scrollIntoView({ behavior: "smooth" });
 };
 
 // State
-const departureAirport = ref<string | null>(null); // Corrected type
-const arrivalAirport = ref<string | null>(null); // Corrected type
-const selectedFlight = ref<string | null>(null); // Corrected type
-const selectedDate = ref<Date | undefined>(undefined); // Corrected type
+const departureAirport = ref<string | null>(null);
+const arrivalAirport = ref<string | null>(null);
+const selectedFlight = ref<string | null>(null);
+const selectedDate = ref<Date | undefined>(undefined);
+
 // Function to redirect to the BookingView
 const redirectToBooking = () => {
   // Use 'lsToken' to get the token from localStorage
@@ -201,6 +201,6 @@ watch(numberOfPassengers, (count) => {
 
 // Debug: Watch disabledDates
 watch(disabledDates, () => {
-  console.log("Disabled Dates:", disabledDates.value);
+  // console.log("Disabled Dates:", disabledDates.value);
 });
 </script>

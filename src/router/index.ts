@@ -133,7 +133,7 @@ router.beforeEach((to, from, next) => {
 
   try {
     if (requiresAuth) {
-      getTokenAndUserId(); // Will throw if expired or missing
+      getTokenAndUserId();
     }
   } catch (err: any) {
     if (err.message === "SESSION_EXPIRED") {

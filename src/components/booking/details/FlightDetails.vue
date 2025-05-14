@@ -66,7 +66,6 @@ import type { Ticket, Flight } from "@/interfaces/interfaces";
 import { defineProps, onMounted } from "vue";
 import { useAirports } from "../../../modules/useAirports";
 
-// Fetching the airport name map from the useAirports composable
 const { airportNameMap, fetchAirports } = useAirports();
 onMounted(() => {
   fetchAirports();

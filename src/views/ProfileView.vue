@@ -2,14 +2,12 @@
   <section
     class="w-full bg-gradient-to-br from-black via-zinc-900 to-black bg-opacity-80 rounded-3xl shadow-2xl border border-[#ff7f50] p-10 text-white mt-8 max-w-6xl mx-auto space-y-8"
   >
-    <!-- Title -->
     <h1
       class="text-5xl font-extrabold text-center tracking-wide text-[#ff7f50] mb-6"
     >
       👤 My Profile
     </h1>
 
-    <!-- Loading & Error -->
     <div
       v-if="userLoading"
       class="text-center text-orange-300 text-xl font-semibold"
@@ -130,11 +128,13 @@ const {
   fetchUserBookings,
   cancelBooking,
 } = useBookings();
+
 const {
   fetchFlightById,
   loading: flightLoading,
   error: flightError,
 } = useFlights();
+
 const {
   user,
   fetchUserProfile,
@@ -162,9 +162,7 @@ async function loadFlights() {
     if (!flightsById.value[id]) {
       try {
         flightsById.value[id] = await fetchFlightById(id);
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
   }
 }
@@ -184,7 +182,7 @@ const filteredBookings = computed(() =>
 );
 
 function flightFor(flightId: string): Flight | undefined {
-  return flightsById.value[flightId] ?? undefined; // Return undefined if the flight is not found
+  return flightsById.value[flightId] ?? undefined;
 }
 
 // Cancel one of the user’s bookings

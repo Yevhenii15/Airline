@@ -1,10 +1,10 @@
-import type { Airport } from "../interfaces/interfaces";
 import { ref, computed } from "vue";
+import { makeRequest } from "./functions/makeRequest";
 import { useUsers } from "./auth/useUsers";
-import { useFlightRoutes } from "../modules/useFlightRoutes"; // adjust path as needed
+import { useFlightRoutes } from "../modules/useFlightRoutes";
+import type { Airport } from "../interfaces/interfaces";
 
 const { routes, fetchRoutes } = useFlightRoutes();
-import { makeRequest } from "./functions/makeRequest";
 const { getTokenAndUserId } = useUsers();
 
 export const useAirports = () => {
@@ -19,7 +19,7 @@ export const useAirports = () => {
       const data = await makeRequest("/airports/all", "GET");
 
       airports.value = data;
-      console.log("Fetched airports:", airports.value);
+      // console.log("Fetched airports:", airports.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {
@@ -53,7 +53,7 @@ export const useAirports = () => {
       );
 
       airport.value = data.airport;
-      console.log("Fetched airport:", airport.value);
+      // console.log("Fetched airport:", airport.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {
@@ -65,6 +65,7 @@ export const useAirports = () => {
     try {
       if (!_id) {
         console.error("❌ ERROR: Missing airport ID! Cannot delete.");
+        alert("❌ ERROR: Missing airport ID! Cannot delete.");
         return;
       }
 
@@ -101,7 +102,6 @@ export const useAirports = () => {
         return;
       }
 
-      // Proceed with deletion
       const response = await makeRequest(
         `/airports/${_id}`,
         "DELETE",
@@ -110,10 +110,10 @@ export const useAirports = () => {
       );
 
       airports.value = airports.value.filter((airport) => airport._id !== _id);
-      console.log("✅ Airport deleted:", _id);
+      // console.log("✅ Airport deleted:", _id);
       alert("Airport deleted successfully");
     } catch (err) {
-      console.error("❌ Error in deleteAirport:", err);
+      // console.error("❌ Error in deleteAirport:", err);
       alert("Failed to delete airport");
       error.value = (err as Error).message;
     }

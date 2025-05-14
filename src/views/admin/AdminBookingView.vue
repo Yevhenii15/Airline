@@ -32,10 +32,8 @@
       </button>
     </div>
 
-    <!-- Display Search Error -->
     <div v-if="searchError" class="text-red-600 mb-4">{{ searchError }}</div>
 
-    <!-- Display Loading / Global Error -->
     <div v-if="bookingLoading" class="text-blue-500 mb-4">Loading...</div>
     <div v-if="bookingError" class="text-red-600 mb-4">{{ bookingError }}</div>
 
@@ -57,7 +55,7 @@
         <!-- 2. Info -->
         <BookingInfo :booking="booking" :formatDate="formatDate" />
 
-        <!-- Flight Details Section -->
+        <!-- 3. Flight Details Section -->
         <div v-if="flightLoading" class="text-blue-500 mb-4">
           Loading flight details...
         </div>
@@ -65,7 +63,6 @@
           {{ flightError }}
         </div>
 
-        <!-- Render FlightDetails if flight data exists -->
         <FlightDetails
           v-else
           :ticket="booking.tickets[0]"
@@ -112,7 +109,6 @@ const flightsById = ref<Record<string, any>>({});
 const searchTerm = ref<string>("");
 const searchError = ref<string>("");
 
-// On mount, load everything
 onMounted(async () => {
   await loadAll();
 });
@@ -134,10 +130,10 @@ async function loadFlightsFor(list: Booking[]) {
         if (flight) {
           flightsById.value[id] = flight;
         } else {
-          flightsById.value[id] = null; // Flight is missing or deleted
+          flightsById.value[id] = null;
         }
       } catch {
-        flightsById.value[id] = null; // Handle error case (deleted or missing flight)
+        flightsById.value[id] = null;
       }
     }
   }

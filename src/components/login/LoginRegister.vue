@@ -7,7 +7,6 @@
     <div class="bg-[#181818] p-6 rounded-xl w-80 text-white">
       <p class="text-2xl font-semibold mb-4">Login / Register</p>
 
-      <!-- Login Form -->
       <div v-if="isLoginForm">
         <input
           type="text"
@@ -37,7 +36,6 @@
         </p>
       </div>
 
-      <!-- Register Form -->
       <div v-else>
         <input
           type="text"
@@ -122,8 +120,8 @@ const toggleForm = () => {
 
 const handleLogin = async () => {
   try {
-    await fetchToken(email.value, password.value, router); // Pass router here
-    resetInputs(); // Reset inputs after login
+    await fetchToken(email.value, password.value, router);
+    resetInputs();
     closePopup();
   } catch (error) {
     alert("Login failed. Please try again.");
@@ -137,17 +135,16 @@ const handleRegister = async () => {
       phone.value,
       password.value,
       new Date(dateOfBirth.value),
-      false, // isAdmin value, set it to false for regular users
-      router // Pass the router directly from setup()
+      false,
+      router
     );
-    resetInputs(); // Reset inputs after registration
+    resetInputs();
     closePopup();
   } catch (error) {
     alert("Registration failed. Please try again.");
   }
 };
 
-// Function to reset inputs
 const resetInputs = () => {
   email.value = "";
   password.value = "";

@@ -15,7 +15,7 @@ export const useCompany = () => {
     try {
       const data = await makeRequest("/about/company", "GET");
       aboutCompany.value = data;
-      console.log("Fetched info:", aboutCompany.value);
+      // console.log("Fetched info:", aboutCompany.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {
@@ -38,7 +38,7 @@ export const useCompany = () => {
         true
       );
       aboutCompany.value = data.company;
-      console.log("Updated company info:", aboutCompany.value);
+      // console.log("Updated company info:", aboutCompany.value);
     } catch (err) {
       error.value = (err as Error).message;
     } finally {

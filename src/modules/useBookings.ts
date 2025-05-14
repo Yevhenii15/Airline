@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { makeRequest } from "./functions/makeRequest";
-import { useUsers } from "../modules/auth/useUsers"; // Correct import
+import { useUsers } from "../modules/auth/useUsers";
 import type { Booking, Flight } from "./../interfaces/interfaces";
 
 const { getTokenAndUserId } = useUsers(); // Correct function call
@@ -14,21 +14,21 @@ export const useBookings = () => {
     loading.value = true;
     error.value = null;
     try {
-      const { userId, email } = getTokenAndUserId(); // Fetch user info using getTokenAndUserId
+      const { userId, email } = getTokenAndUserId();
       if (!userId || !email) {
         throw new Error("User not logged in");
       }
 
-      console.log("User email:", email); // Access user email directly from getTokenAndUserId()
+      // console.log("User email:", email);
 
-      // Pass userId and userEmail with the booking data
       const response = await makeRequest(
         "/bookings",
         "POST",
-        { ...bookingData, user_id: userId, user_email: email }, // Use userId and email from getTokenAndUserId
+        { ...bookingData, user_id: userId, user_email: email },
         true
       );
-      console.log("Booking successful:", response);
+      // console.log("Booking successful:", response);
+
       return response;
     } catch (err) {
       error.value = (err as Error).message;
@@ -89,7 +89,7 @@ export const useBookings = () => {
       "0"
     )}-${String(date.getDate()).padStart(2, "0")}`;
 
-  // Admin: Fetch all bookings
+  // Fetch all bookings
   const fetchAllBookings = async (): Promise<void> => {
     loading.value = true;
     try {
@@ -103,7 +103,7 @@ export const useBookings = () => {
         true
       );
       bookings.value = data || [];
-      console.log("📦 All bookings fetched", bookings.value);
+      // console.log("📦 All bookings fetched", bookings.value);
     } catch (err) {
       error.value = (err as Error).message;
       bookings.value = [];
@@ -112,7 +112,7 @@ export const useBookings = () => {
     }
   };
 
-  // User: Fetch own bookings
+  // Fetch own bookings
   const fetchUserBookings = async (): Promise<void> => {
     loading.value = true;
     try {
@@ -124,7 +124,7 @@ export const useBookings = () => {
         true
       );
       bookings.value = data || [];
-      console.log("👤 User bookings fetched", bookings.value);
+      // console.log("👤 User bookings fetched", bookings.value);
     } catch (err) {
       error.value = (err as Error).message;
       bookings.value = [];
@@ -133,7 +133,7 @@ export const useBookings = () => {
     }
   };
 
-  // Shared: Fetch single booking
+  // Fetch single booking
   const fetchBookingById = async (id: string): Promise<Booking> => {
     try {
       const booking = await makeRequest(
@@ -147,6 +147,7 @@ export const useBookings = () => {
       throw new Error((err as Error).message);
     }
   };
+  // Fetch bookings by email
   const fetchBookingsByEmail = async (email: string): Promise<void> => {
     loading.value = true;
     try {
@@ -157,7 +158,7 @@ export const useBookings = () => {
         true
       );
       bookings.value = data || [];
-      console.log(`📧 Bookings for email ${email} fetched`, bookings.value);
+      // console.log(`📧 Bookings for email ${email} fetched`, bookings.value);
     } catch (err) {
       error.value = (err as Error).message;
       bookings.value = [];
@@ -170,13 +171,12 @@ export const useBookings = () => {
     try {
       await makeRequest(`/bookings/${id}/cancel`, "PATCH", undefined, true);
 
-      // Instead of removing, just update the status locally
       const booking = bookings.value.find((b) => b._id === id);
       if (booking) {
         booking.bookingStatus = "Cancelled";
       }
 
-      console.log("❌ Booking marked as cancelled:", id);
+      // console.log("❌ Booking marked as cancelled:", id);
     } catch (err) {
       error.value = (err as Error).message;
     }

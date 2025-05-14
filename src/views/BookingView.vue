@@ -133,29 +133,9 @@ import type { Booking } from "../interfaces/interfaces";
 import { useRoute } from "vue-router";
 import { useAirports } from "../modules/useAirports";
 
+// Composables
 const { airportNameMap, fetchAirports } = useAirports();
 
-onMounted(() => {
-  fetchAirports(); // Make sure airport data is loaded
-});
-
-const route = useRoute();
-
-onMounted(() => {
-  if (route.query.flight) {
-    selectedFlight.value = route.query.flight as string;
-  }
-
-  if (route.query.date) {
-    selectedDate.value = new Date(route.query.date as string);
-  }
-
-  if (route.query.passengers) {
-    numberOfPassengers.value = parseInt(route.query.passengers as string);
-  }
-});
-
-// Composables
 const {
   createBooking,
   loading: bookingLoading,
@@ -177,6 +157,26 @@ const {
   handleSeatSelect,
 } = useTickets();
 
+onMounted(() => {
+  fetchAirports();
+});
+
+const route = useRoute();
+
+onMounted(() => {
+  if (route.query.flight) {
+    selectedFlight.value = route.query.flight as string;
+  }
+
+  if (route.query.date) {
+    selectedDate.value = new Date(route.query.date as string);
+  }
+
+  if (route.query.passengers) {
+    numberOfPassengers.value = parseInt(route.query.passengers as string);
+  }
+});
+
 // State variables
 const userId = ref<string | null>(null);
 const selectedFlight = ref<string | null>(null);
@@ -189,7 +189,7 @@ onMounted(() => {
     const { userId: fetchedUserId } = getTokenAndUserId();
     userId.value = fetchedUserId;
   } catch (err) {
-    console.error("Error fetching user ID:", err);
+    // console.error("Error fetching user ID:", err);
   }
 });
 
@@ -217,7 +217,7 @@ watch([selectedFlight, selectedDate], async ([flightId, date]) => {
     const formattedDate = formatLocalDate(date);
     bookedSeats.value = await getBookedSeats(flightId, formattedDate);
     loadingSeats.value = false;
-    console.log("Booked seats for", formattedDate, ":", bookedSeats.value);
+    // console.log("Booked seats for", formattedDate, ":", bookedSeats.value);
   }
 });
 
@@ -288,6 +288,6 @@ const submitBooking = async () => {
 
 // Debug: Watch disabledDates (for any changes in disabled dates)
 watch(disabledDates, () => {
-  console.log("Disabled Dates:", disabledDates.value);
+  // console.log("Disabled Dates:", disabledDates.value);
 });
 </script>

@@ -96,7 +96,6 @@ const { fetchAirports, airportNameMap } = useAirports();
 
 const newFlight = defineModel<NewFlight>({ required: true });
 
-// Props
 const { routes } = defineProps<{
   routes: Array<any>;
 }>();
@@ -108,25 +107,21 @@ const addFlightHandler = () => {
   const startDate = new Date(newFlight.value.operatingPeriod.startDate);
   const endDate = new Date(newFlight.value.operatingPeriod.endDate);
 
-  // Validate route selection
   if (!newFlight.value.route._id) {
     alert("Please select a valid route.");
     return;
   }
 
-  // Validate start date
   if (startDate < today) {
     alert("Start date cannot be in the past.");
     return;
   }
 
-  // Validate end date
   if (endDate < startDate) {
     alert("End date cannot be before the start date.");
     return;
   }
 
-  // Validate departure day (should be a valid day of the week)
   const validDays = [
     "Monday",
     "Tuesday",
@@ -141,8 +136,7 @@ const addFlightHandler = () => {
     return;
   }
 
-  // Validate departure time (HH:MM format)
-  const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Matches 00:00 to 23:59
+  const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
   if (!timeFormatRegex.test(newFlight.value.departureTime)) {
     alert("Please enter a valid departure time in the format HH:MM.");
     return;
@@ -150,10 +144,9 @@ const addFlightHandler = () => {
 
   emit("add-flight", newFlight.value);
   alert("Flight added successfully!");
-  emit("reset-flight"); // ask parent to reset
+  emit("reset-flight");
 };
 
-// Helper function
 const getRouteName = (route: any) =>
   `${airportNameMap.value[route.departureAirport_id]} → ${
     airportNameMap.value[route.arrivalAirport_id]

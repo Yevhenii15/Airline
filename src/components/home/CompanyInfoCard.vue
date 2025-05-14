@@ -2,14 +2,11 @@
   <section
     class="w-full bg-gradient-to-br from-black via-zinc-900 to-black bg-opacity-80 rounded-3xl shadow-2xl border border-[#ff7f50] p-10 text-white mt-8 space-y-8"
   >
-    <!-- Title -->
     <h2
       class="text-5xl font-extrabold text-center mb-4 tracking-wide text-[#ff7f50]"
     >
       About FlyEAZY
     </h2>
-
-    <!-- Loading / Error -->
     <div
       v-if="loading"
       class="text-center text-orange-300 text-xl font-semibold"
@@ -22,10 +19,7 @@
     >
       ❗ {{ error }}
     </div>
-
-    <!-- Company Info -->
     <div v-else class="space-y-8">
-      <!-- Description -->
       <div class="bg-zinc-800 p-6 rounded-xl shadow-inner">
         <h3 class="text-[#ff7f50] text-2xl font-bold mb-3">Who We Are</h3>
         <p class="text-gray-200 text-lg leading-relaxed">
@@ -33,7 +27,6 @@
         </p>
       </div>
 
-      <!-- Contact Info Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div class="bg-zinc-800 p-5 rounded-xl">
           <h4 class="text-[#ff7f50] font-semibold text-lg mb-2">
