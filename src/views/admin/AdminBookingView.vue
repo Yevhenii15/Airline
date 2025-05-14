@@ -64,12 +64,7 @@
         <div v-if="flightError" class="text-red-600 mb-4">
           {{ flightError }}
         </div>
-        <!-- Check if flight is missing and show message -->
-        <div v-if="!flightError && !flightsById[booking.tickets[0].flight_id]">
-          <p class="text-red-600">
-            This flight was deleted by the company or does not exist.
-          </p>
-        </div>
+
         <!-- Render FlightDetails if flight data exists -->
         <FlightDetails
           v-else

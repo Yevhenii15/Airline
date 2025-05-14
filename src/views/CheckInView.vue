@@ -301,7 +301,9 @@ const availableBookings = computed(() =>
         (ticket) =>
           ticket.isCheckedIn !== true &&
           new Date(ticket.departureDate) > new Date()
-      ) && new Date(booking.tickets[0].departureDate) > new Date()
+      ) &&
+      new Date(booking.tickets[0].departureDate) > new Date() &&
+      booking.bookingStatus !== "Cancelled"
   )
 );
 </script>

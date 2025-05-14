@@ -178,7 +178,7 @@ export const useUsers = () => {
         isAdmin,
       };
     } catch (err) {
-      console.error("Invalid token:", err);
+      // console.error("Invalid token:", err);
       if ((err as Error).message === "SESSION_EXPIRED") {
         throw new Error("SESSION_EXPIRED");
       }

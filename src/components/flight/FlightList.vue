@@ -75,6 +75,9 @@
         <p class="text-lg font-semibold text-white">
           ✈️ {{ flight.flightNumber }} ({{ getRouteName(flight.route) }})
         </p>
+        <p class="font-semibold text-sm">
+          {{ flight.status === "Scheduled" ? "✅ Scheduled" : "❌ Cancelled" }}
+        </p>
         <p class="text-gray-400 text-sm">📅 {{ flight.departureDay }}</p>
         <p class="text-gray-400 text-sm">
           🕒 {{ flight.departureTime }} → {{ flight.arrivalTime }}

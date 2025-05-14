@@ -73,10 +73,10 @@ export const useFlights = () => {
     }
   };
 
-  const deleteFlight = async (_id: string): Promise<void> => {
+  const cancelFlight = async (_id: string): Promise<void> => {
     try {
       if (!_id) {
-        console.error("❌ ERROR: Missing flight ID! Cannot delete.");
+        console.error("❌ ERROR: Missing flight ID! Cannot cancel.");
         return;
       }
 
@@ -84,48 +84,82 @@ export const useFlights = () => {
 
       if (!isAdmin) throw new Error("Access Denied: Admins only");
 
-      // Ensure _id is a valid string before proceeding
       if (typeof _id !== "string" || !_id.trim()) {
         console.error("❌ ERROR: Invalid flight ID!");
         return;
       }
 
-      // Step 1: Fetch all bookings and check if any booking contains the flight ID
-      await fetchAllBookings(); // Fetch all bookings (you can adjust to fetch only relevant bookings)
+      // Step 1: Fetch all bookings and find those with this flight
+      await fetchAllBookings();
       const bookingsForFlight = bookings.value.filter((booking) =>
         booking.tickets.some((ticket) => ticket.flight_id === _id)
       );
 
       if (bookingsForFlight.length > 0) {
-        // Step 2: Prompt for confirmation to cancel bookings
-        const confirmDelete = confirm(
-          "This flight has existing bookings. Do you want to cancel all bookings and delete the flight?"
+        const confirmCancel = confirm(
+          "This flight has existing bookings. Do you want to cancel the flight and all associated bookings?"
         );
 
-        if (!confirmDelete) {
-          console.log("❌ Deletion cancelled.");
+        if (!confirmCancel) {
+          console.log("❌ Flight cancellation aborted by user.");
           return;
         }
 
-        // Step 3: Cancel all bookings
         for (const booking of bookingsForFlight) {
+          let hasChanges = false;
+
           for (const ticket of booking.tickets) {
-            if (ticket.flight_id === _id) {
-              await cancelBooking(booking._id as string); // Ensure that booking._id is treated as a string
+            if (
+              ticket.flight_id === _id &&
+              ticket.flightStatus !== "Cancelled"
+            ) {
+              ticket.flightStatus = "Cancelled";
+              hasChanges = true;
             }
           }
+
+          if (hasChanges) {
+            booking.tickets = booking.tickets.map((ticket) =>
+              ticket.flight_id === _id
+                ? { ...ticket, flightStatus: "Cancelled" }
+                : ticket
+            );
+
+            // Save ticket changes
+            await makeRequest(
+              `/bookings/${booking._id}`,
+              "PATCH",
+              { tickets: booking.tickets },
+              true
+            );
+
+            // Mark the whole booking as cancelled
+            await makeRequest(
+              `/bookings/${booking._id}/cancel`,
+              "PATCH",
+              undefined,
+              true
+            );
+          }
         }
-        alert("All bookings have been cancelled.");
+
+        alert("All related bookings have been canceled.");
       }
 
-      // Step 4: Proceed to delete the flight
-      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true);
-      flights.value = flights.value.filter((flight) => flight._id !== _id);
-      alert("Flight deleted successfully");
-      console.log("✅ Flight deleted:", _id);
+      // Step 3: Mark the flight as canceled (soft delete)
+      await makeRequest(`/flights/${_id}`, "DELETE", undefined, true); // Still using DELETE method as per route
+
+      // Step 4: Update flight list in frontend
+      const flightToCancel = flights.value.find((f) => f._id === _id);
+      if (flightToCancel) {
+        flightToCancel.status = "Cancelled";
+      }
+
+      alert("Flight has been successfully canceled.");
+      console.log("✅ Flight canceled:", _id);
     } catch (err) {
-      alert("Failed to delete flight");
-      console.error("❌ Error in deleteFlight:", err);
+      alert("Failed to cancel flight");
+      console.error("❌ Error in cancelFlight:", err);
       error.value = (err as Error).message;
     }
   };
@@ -165,7 +199,7 @@ export const useFlights = () => {
     fetchFlights,
     fetchFlightById,
     addFlight,
-    deleteFlight,
+    cancelFlight,
     updateFlight,
   };
 };

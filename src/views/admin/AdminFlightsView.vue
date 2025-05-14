@@ -34,7 +34,7 @@
       :flights="flights"
       :routes="routes"
       :airport-name-map="airportNameMap"
-      @delete-flight="deleteFlight"
+      @delete-flight="cancelFlight"
       @update-flight="handleFlightUpdate"
     />
   </div>
@@ -54,7 +54,7 @@ const {
   error: flightError,
   loading: flightLoading,
   fetchFlights,
-  deleteFlight,
+  cancelFlight,
   addFlight,
   updateFlight,
 } = useFlights();
