@@ -1,0 +1,1 @@
+import{d as o,m as a,o as t,c,y as i,K as n,_}from"./index-BP76MkKj.js";const l={class:"auth-page"},p=o({__name:"AuthView",setup(r){const e=a(!0),s=()=>{e.value=!1};return(u,d)=>(t(),c("div",l,[i(n,{isVisible:e.value,onClose:s},null,8,["isVisible"])]))}}),m=_(p,[["__scopeId","data-v-009e26d3"]]);export{m as default};
