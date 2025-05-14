@@ -11,15 +11,3 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
-<script>
-  if (location.pathname !== "/" && !location.pathname.includes(".")) {
-    const redirect =
-      "/" +
-      location.pathname.replace(/^\/+/, "") +
-      location.search +
-      location.hash;
-    location.replace(
-      "/yevhenii15.github.io/?redirect=" + encodeURIComponent(redirect)
-    );
-  }
-</script>
