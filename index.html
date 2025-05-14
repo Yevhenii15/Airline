@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
   </head>
   <body class="min-h-screen min-w-full flex flex-col">
@@ -11,3 +11,15 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+<script>
+  if (location.pathname !== "/" && !location.pathname.includes(".")) {
+    const redirect =
+      "/" +
+      location.pathname.replace(/^\/+/, "") +
+      location.search +
+      location.hash;
+    location.replace(
+      "/Yevhenii15.github.io/?redirect=" + encodeURIComponent(redirect)
+    );
+  }
+</script>
