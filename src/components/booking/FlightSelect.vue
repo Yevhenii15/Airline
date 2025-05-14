@@ -86,6 +86,8 @@ today.setHours(0, 0, 0, 0);
 const filteredFlights = computed(() => {
   return flights.value.filter((flight) => {
     const endDate = new Date(flight.operatingPeriod?.endDate);
+    // Check if the flight is not cancelled
+    if (flight.status === "Cancelled") return false;
     endDate.setHours(0, 0, 0, 0);
     return endDate >= today;
   });

@@ -41,6 +41,9 @@
                   class="input"
                   required
                 />
+                <span class="text-white">Date of Birth:</span>
+                <span class="text-white">Expiration Date:</span>
+
                 <input
                   v-model="checkInData[getTicketId(ticket)].dateOfBirth"
                   type="date"
